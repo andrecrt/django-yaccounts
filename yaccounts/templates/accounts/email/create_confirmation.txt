@@ -1,0 +1,6 @@
+Olá, {{ name }}!
+
+Obrigado pelo seu registo.
+
+Para activar a sua conta, precisamos apenas que confirme o seu email acedendo ao seguinte endereço:
+{{ activation_link }}

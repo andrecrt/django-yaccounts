@@ -1,0 +1,44 @@
+{% load i18n %}
+
+<h1>{% trans "Sign-up" %}</h1>
+
+<!-- Messages -->
+{% if messages %}
+  <ul>
+  {% for message in messages %}
+    [{{ message.tags }}] {{ message }}
+  {% endfor %}
+  </ul>
+{% endif %}
+
+<form method="POST" action="{% url 'accounts:create' %}">
+  {% csrf_token %}
+
+  <!-- Name -->
+  <p>
+    <label>{% trans "Name" %}</label>
+    <input type="text" name="name" value="{{ name }}">
+  </p>
+  
+  <!-- Email -->
+  <p>
+    <label>{% trans "Email" %}</label>
+    <input type="text" name="email" value="{{ email }}">
+  </p>
+  
+  <!-- Password -->
+  <p>
+    <label>{% trans "Password" %}</label>
+    <input type="password" name="password">
+  </p>
+
+  <!-- Page to redirect after login -->
+  {% if next %}
+    <input type="hidden" name="next" value="{{ next }}">
+  {% endif %}
+  
+  <!-- Submit form -->
+  <p>
+    <button type="submit">{% trans "Sign up" %}</button>
+  </p>
+</form>

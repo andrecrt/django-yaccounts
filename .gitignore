@@ -1,0 +1,6 @@
+.project
+.pydevproject
+.settings
+dist/
+django_yaccounts.egg-info/
+*.pyc
