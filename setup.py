@@ -34,5 +34,7 @@ setup(
     ],
     install_requires=[
         'PIL==1.1.7',
+        'django-yapi',
+        'django-yutils'
     ]
 )
