@@ -56,37 +56,14 @@ settings.py
 
 ``AUTH_USER_MODEL = 'yaccounts.User'``
 
-4. Configure the API URL Namespace where the Yaccounts API will be exposed. Example for when YAPI's URLs live in ``api/v1/``
-and the respective Django URL files are::
-
-    # myproject/urls.py
-    # ============
-
-    urlpatterns = patterns('',
-        # all other url mappings
-        url(r'^api', include('myproject.api.urls', namespace='api')),
-    )
-    
-    # myproject/api/urls.py
-    # ============
-
-    urlpatterns = patterns('',
-        # all other api versions
-        url(r'^/v1', include('myproject.api.v1.urls', namespace='myapp')),
-    )
-    
-    # myproject/api/v1/urls.py
-    # ============
-
-    urlpatterns = patterns('',
-        # all other api url mappings
-        url(r'^/account', include('yaccounts.api.urls', namespace='account')),
-    )
-    
-The configuration should be::
+4. Configure YACCOUNT's settings::
 
     YACCOUNTS = {
+    	# API URL Namespace (e.g. YAPI URL is in /api/v1, and the respective Django URL namespaces are 'api' and 'v1')
         'api_url_namespace': 'api:v1'
+        
+        # Enabled signup types (possible: 'EMAIL', 'FACEBOOK', 'TWITTER')
+        'signup_available': ['EMAIL'] # Only email signup enabled
     }
 
 Logs
