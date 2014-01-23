@@ -1,4 +1,5 @@
 import base64
+import datetime
 import json
 import logging
 from django.conf import settings
@@ -14,7 +15,8 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 from exceptions import InvalidParameter
-from models import AuthenticationLog
+from models import AuthenticationLog, ResetRequest
+from utils import process_confirmation_token
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -32,11 +34,11 @@ def index(request):
         photo_url = None
     
     # Render page.
-    return render_to_response('accounts/index.html',
+    return render_to_response('yaccounts/index.html',
                               { 'name': request.user.name,
                                 'email': request.user.email,
                                 'photo_url': photo_url,
-                                'change_photo_url': settings.HOST_URL + reverse('api:v1:accounts:photo') },
+                                'change_photo_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo') },
                               context_instance=RequestContext(request))
 
 
@@ -171,7 +173,7 @@ def login_account(request):
         # 3) If this place is reached, then login was unsuccessful.
         # The login page is rendered with respective message and pre-filled fields.
         #
-        return render_to_response('accounts/login.html',
+        return render_to_response('yaccounts/login.html',
                                   { 'email': email, 'next': request.POST.get('next', None) },
                                   context_instance=RequestContext(request))
     
@@ -179,7 +181,7 @@ def login_account(request):
     #                      Render login page.                      #
     ################################################################
     else:
-        return render_to_response('accounts/login.html',
+        return render_to_response('yaccounts/login.html',
                                   { 'next': request.GET.get('next', None) },
                                   context_instance=RequestContext(request))
 
@@ -197,10 +199,6 @@ def create_account(request):
     """
     Creates a new account.
     """
-    # Check if this feature is enabled.
-    if not settings.ACCOUNT_CREATION_AVAILABLE:
-        raise Http404
-    
     # If a user is logged in, redirect to account page.
     if request.user.is_authenticated():
         return HttpResponseRedirect(reverse('accounts:index'))
@@ -209,6 +207,12 @@ def create_account(request):
     #                     A form was submitted.                    #
     ################################################################
     if request.method == 'POST':
+        
+        # Check if this feature is enabled.
+        try:
+            settings.YACCOUNTS['signup_available'].index('EMAIL')
+        except:
+            raise Http404
         
         #
         # 1) Fetch params.
@@ -244,7 +248,7 @@ def create_account(request):
         # 3) If this place is reached, then account creation form contained errors.
         # The sign-up page is rendered with respective message and pre-filled fields.
         #
-        return render_to_response('accounts/create.html',
+        return render_to_response('yaccounts/create.html',
                                   { 'name': name, 'email': email, 'next': request.POST.get('next', None) },
                                   context_instance=RequestContext(request))
     
@@ -252,14 +256,14 @@ def create_account(request):
     #                     Render sign-up page.                     #
     ################################################################
     else:
-        return render_to_response('accounts/create.html',
+        return render_to_response('yaccounts/create.html',
                                   { 'next': request.GET.get('next', None) },
                                   context_instance=RequestContext(request))
 
 
-def confirm_account(request):
+def confirm_operation(request):
     """
-    Confirm email address for account activation or email address update.
+    Confirm operation (e.g. Account Activation, Password Reset, etc)
     """
     #
     # Fetch token.
@@ -274,33 +278,23 @@ def confirm_account(request):
     #
     # Process token.
     #
-    try:
-        
-        # A valid token is a base64 encoded string.
-        confirm_data = json.loads(base64.b64decode(token))
-        
-        # Containing the account's email, confirmation scenario and respective key.
-        try:
-            email = confirm_data['email']
-            operation = confirm_data['operation']
-            key = confirm_data['key']
-        except KeyError:
-            logger.info('Invalid account confirmation DATA! Data: ' + json.dumps(confirm_data) + ', IP Address: ' + request.META['REMOTE_ADDR'])
-            raise Http404
+    processed_token = process_confirmation_token(token)
     
-    # Unable to b64 decode.
-    except TypeError:
-        logger.info('Invalid BASE64 account confirmation token! Token: ' + token + ', IP Address: ' +  request.META['REMOTE_ADDR'])
+    # Invalid token.
+    if not processed_token:
         raise Http404
     
-    # Error decoding JSON
-    except ValueError:
-        logger.info('Invalid JSON account confirmation token! Token: ' + token + ', IP Address: ' +  request.META['REMOTE_ADDR'])
-        raise Http404
+    # Token info.
+    else:
+        operation = processed_token['operation']
+        email = processed_token['email']
+        key = processed_token['key']
     
     #
     # Validate operation.
     #
+    
+    # Account activation.
     if operation == 'activation':
         
         # Verify activation key, by attempting to authenticate user using it.
@@ -317,10 +311,155 @@ def confirm_account(request):
             
         # Invalid activation key.
         else:
-            logger.info('Invalid activation key! Data: ' + json.dumps(confirm_data) + ', IP Address: ' + request.META['REMOTE_ADDR'])
+            logger.info('Invalid activation key! Email: ' + email + ', Key: ' + key + ', Operation: ' + operation + ', IP Address: ' + request.META['REMOTE_ADDR'])
             raise Http404
     
     # Invalid operation.
     else:
-        logger.info('Invalid account confirmation OPERATION! Data: ' + json.dumps(confirm_data) + ', IP Address: ' + request.META['REMOTE_ADDR'])
+        logger.info('Invalid account confirmation OPERATION! Email: ' + email + ', Key: ' + key + ', Operation: ' + operation + ', IP Address: ' + request.META['REMOTE_ADDR'])
         raise Http404
+
+
+def reset_account(request):
+    """
+    Request password reset.
+    """
+    
+    email = ''
+    
+    # A reset was requested.
+    if request.method == 'POST':
+        
+        # Mandatory params.
+        email = request.POST.get('email', '')
+        if email == '':
+            messages.error(request, _("Please provide your email."))
+        
+        # Business as usual...
+        else:
+            # Check if user with given email exists.
+            try:
+                user = get_user_model().objects.get(email=email)
+                
+                # Check if account is active.
+                if not user.is_active:
+                    messages.error(request, _("Your account is disabled."))
+                
+                #
+                # If this place is reached, then we have a valid account. Proceed with reset request! ------------->
+                #
+                
+                # Check if a password reset for this user wasn't requested less than 5 mins ago.
+                elif ResetRequest.objects.filter(user=user,
+                                               created_at__gte=(datetime.datetime.now() - datetime.timedelta(0, 300))):
+                    messages.error(request, _("A reset was requested recently."))
+                    
+                # Send reset email.
+                else:
+                    try:
+                        ResetRequest.new(user)
+                        email = ''
+                        messages.success(request, _("An email was sent with reset instructions."))
+                    except:
+                        logger.error('Unable to reset password! Email: ' + email, exc_info=1)
+                        messages.error(request, _("Unable to reset password."))
+                
+                #
+                # <-------------------------------------------------------------------------------------------------
+                #
+                
+            except ObjectDoesNotExist:
+                messages.error(request, _("User does not exist."))
+    
+    # Render page.
+    return render_to_response('yaccounts/reset.html',
+                              { 'email': email },
+                              context_instance=RequestContext(request))
+    
+
+def reset_confirm(request):
+    """
+    If token is valid, allow password change.
+    """
+    
+    #
+    # Process token.
+    #
+    try:
+        token = request.GET['t']
+        processed_token = process_confirmation_token(token)
+    except KeyError:
+        raise Http404
+    
+    # Invalid token.
+    if not processed_token:
+        raise Http404
+    
+    # Token info.
+    else:
+        operation = processed_token['operation']
+        email = processed_token['email']
+        key = processed_token['key']
+        
+    #
+    # Validate email.
+    #
+    try:
+        user = get_user_model().objects.get(email=email)
+    except ObjectDoesNotExist:
+        logger.warning('Valid reset token for an invalid user! Email: ' + email + ', Key: ' + key + ', Operation: '+ operation + ', IP Address: ' + request.META['REMOTE_ADDR'])
+        raise Http404
+    
+    #
+    # Validate operation.
+    #
+    if operation == 'password_reset':
+        
+        # Check if an unused reset key exists.
+        try:
+            reset_request = ResetRequest.objects.get(user=user, key=key, reset_at__isnull=True)
+        except ObjectDoesNotExist:
+            logger.debug('Invalid reset key! Email: ' + email + ', Key: ' + key)
+            raise Http404
+        
+        # A password update was requested.
+        if request.method == 'POST':
+            
+            # Mandatory params.
+            password = request.POST.get('password', '')
+            password_confirm = request.POST.get('password_confirm', '')
+            if password == '' or password_confirm == '':
+                messages.error(request, _("Please provide a password and respective confirmation."))
+                
+            # Check if new password and confirmation match.
+            elif password != password_confirm:
+                messages.error(request, _("Passwords don't match."))
+        
+            # Proceed with reset!
+            else:
+                
+                # Mark key as used.
+                reset_request.reset_at = datetime.datetime.now()
+                reset_request.save()
+                
+                # Update user's password.
+                reset_request.user.update(password=password)
+                
+                # Login user.
+                user = authenticate(email=email, password=password)
+                login(request, user)
+                
+                # Redirect to account page.
+                messages.success(request, _("Your password was updated."))
+                return HttpResponseRedirect(reverse('accounts:index'))
+        
+        # Render page.
+        return render_to_response('yaccounts/reset_confirm.html',
+                                  { 'token': token },
+                                  context_instance=RequestContext(request))
+    
+    # Invalid operation.
+    else:
+        logger.info('Invalid reset confirmation OPERATION! Email: ' + email + ', Key: ' + key + ', Operation: ' + operation + ', IP Address: ' + request.META['REMOTE_ADDR'])
+        raise Http404
+    

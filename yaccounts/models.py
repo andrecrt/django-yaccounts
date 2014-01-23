@@ -10,10 +10,10 @@ from django.template import Context
 from django.template.loader import get_template
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-
-from exceptions import InvalidParameter
 from yapi.utils import generate_key
 from yutils.email import EmailMessage
+
+from exceptions import InvalidParameter
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -147,7 +147,7 @@ class UserPhoto(models.Model):
     User profile picture.
     """
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
-    file = models.ImageField(upload_to='accounts/photos/')
+    file = models.ImageField(upload_to='yaccounts/photos/')
     
     def __unicode__(self):
         """
@@ -204,16 +204,16 @@ class ActivationKey(models.Model):
             })
             
             # Render plaintext email template.
-            plaintext = get_template('accounts/email/create_confirmation.txt')
+            plaintext = get_template('yaccounts/email/create_confirmation.txt')
             text_content = plaintext.render(d)
             
             # Render HTML email template.
-            html = get_template('accounts/email/create_confirmation.html')
+            html = get_template('yaccounts/email/create_confirmation.html')
             html_content = html.render(d)
             
             # Email options.
             subject = _("New Account")
-            from_email = settings.ACCOUNT_CREATION_MAIL_SENDER
+            from_email = settings.YACCOUNTS['email_from']
             to = [{ 'name': self.user.name, 'email': self.user.email }]
             
             # Build message and send.
@@ -222,7 +222,7 @@ class ActivationKey(models.Model):
                                 subject=subject,
                                 text_content=text_content,
                                 html_content=html_content,
-                                tags=['YU2 Account Confirm'])
+                                tags=['Account Confirm'])
             result = email.send()
             
             # Check if email wasn't sent.
@@ -231,7 +231,7 @@ class ActivationKey(models.Model):
                 raise
         except:
             logger.error('Unable to send confirmation email', exc_info=1)
-            return False
+            raise
         
         # Return great success.
         return True
@@ -280,3 +280,88 @@ class AuthenticationLog(models.Model):
         # Shave and return.
         authlog.save()
         return authlog
+    
+    
+class ResetRequest(models.Model):
+    """
+    Account password reset.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    key = models.CharField(max_length=200, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    reset_at = models.DateTimeField(blank=True, null=True)
+    
+    def __unicode__(self):
+        """
+        String representation of the model instance.
+        """
+        return str(self.user)
+    
+    @staticmethod
+    def new(user):
+        """
+        Creates an activation key for given user.
+        """
+        reset_request = ResetRequest(user=user, key=generate_key(salt=user.email))
+        reset_request.save()
+        try:
+            reset_request.send_reset_link()
+        except:
+            reset_request.delete()
+            raise
+        return True
+    
+    def get_reset_token(self):
+        """
+        Returns a Base64 encoded string containing the account's email and key.
+        """
+        token = {
+            'email': self.user.email,
+            'operation': 'password_reset',
+            'key': self.key
+        }
+        return base64.b64encode(json.dumps(token))
+    
+    def send_reset_link(self):
+        """
+        Sends the reset URL to the customers's email.
+        """
+        try:
+            # Email variables.
+            d = Context({
+                'name': self.user.name,
+                'reset_link': settings.HOST_URL + reverse('accounts:reset_confirm') + '?t=' + self.get_reset_token()
+            })
+            
+            # Render plaintext email template.
+            plaintext = get_template('yaccounts/email/reset_confirmation.txt')
+            text_content = plaintext.render(d)
+            
+            # Render HTML email template.
+            html = get_template('yaccounts/email/reset_confirmation.html')
+            html_content = html.render(d)
+            
+            # Email options.
+            subject = _("Reset Password")
+            from_email = settings.YACCOUNTS['email_from']
+            to = [{ 'name': self.user.name, 'email': self.user.email }]
+            
+            # Build message and send.
+            email = EmailMessage(sender=from_email,
+                                recipients=to,
+                                subject=subject,
+                                text_content=text_content,
+                                html_content=html_content,
+                                tags=['Account Reset'])
+            result = email.send()
+            
+            # Check if email wasn't sent.
+            if not result['sent']:
+                logger.error('Password Reset Email Not Sent! Result: ' + str(result['result']))
+                raise
+        except:
+            logger.error('Unable to send password reset email', exc_info=1)
+            raise
+        
+        # Return great success.
+        return True

@@ -1,0 +1,6 @@
+Hello, {{ name }}!
+
+Thank you for creating an account with us.
+
+To activate it, we just need you to confirm that this is your email address by opening the following URL:
+{{ activation_link }}

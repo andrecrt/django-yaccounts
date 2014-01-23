@@ -56,14 +56,24 @@ settings.py
 
 ``AUTH_USER_MODEL = 'yaccounts.User'``
 
-4. Configure YACCOUNT's settings::
+4. Configure authentication backends to enable the Authentication Key backend for account email confirmation::
+
+    AUTHENTICATION_BACKENDS = (
+        'django.contrib.auth.backends.ModelBackend',
+        'apps.accounts.backends.ActivationKeyAuthenticationBackend'
+    )
+
+5. Configure YACCOUNT's settings::
 
     YACCOUNTS = {
     	# API URL Namespace (e.g. YAPI URL is in /api/v1, and the respective Django URL namespaces are 'api' and 'v1')
-        'api_url_namespace': 'api:v1'
+        'api_url_namespace': 'api:v1',
         
         # Enabled signup types (possible: 'EMAIL', 'FACEBOOK', 'TWITTER')
-        'signup_available': ['EMAIL'] # Only email signup enabled
+        'signup_available': ['EMAIL'], # Only email signup enabled
+        
+        # Application emails 'sender'.
+        'email_from': { 'name': 'Administrator', 'email': 'admin@example.com' }
     }
 
 Logs

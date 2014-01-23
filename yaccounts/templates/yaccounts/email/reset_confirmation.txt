@@ -1,0 +1,6 @@
+Hello, {{ name }}!
+
+To reset your password open the following URL:
+{{ reset_link }}
+
+If you didn't request a password reset, just ignore this email.
