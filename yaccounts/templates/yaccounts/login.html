@@ -43,14 +43,8 @@
           <span class="span-or">or</span>
         </div>
         
-        <!-- Messages -->
-        {% if messages %}
-          <div class="django-messages">
-            {% for message in messages %}
-             <div class="alert alert-danger">{{ message }}</div>
-            {% endfor %}
-          </div>
-        {% endif %}
+        <!-- Django Messages -->
+        {% include 'yaccounts/django_messages.html' %}
 
         <!-- Email Login -->
         <form class="form-signin" method="POST" action="{% url 'accounts:login' %}">

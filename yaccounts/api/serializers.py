@@ -1,5 +1,4 @@
 import logging
-
 from yapi.serializers import BaseSerializer
 
 # Instantiate logger.

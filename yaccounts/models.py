@@ -147,7 +147,7 @@ class UserPhoto(models.Model):
     User profile picture.
     """
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
-    file = models.ImageField(upload_to='yaccounts/photos/')
+    file = models.ImageField(upload_to='yaccounts/profile_pictures/')
     
     def __unicode__(self):
         """

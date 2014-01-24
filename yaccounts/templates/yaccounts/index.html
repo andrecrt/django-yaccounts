@@ -1,16 +1,205 @@
+{% extends 'yaccounts/base.html' %}
+
 {% load i18n %}
 
-<h1>{% trans "Account" %}</h1>
+{% load staticfiles %}
 
-<!-- Messages -->
-{% if messages %}
-  <ul>
-  {% for message in messages %}
-    [{{ message.tags }}] {{ message }}
-  {% endfor %}
-  </ul>
-{% endif %}
+{% block body %}
 
-<p>
-	<a href="{% url 'accounts:logout' %}">{% trans "Logout" %}</a>
-</p>
+<!-- Django Messages -->
+{% include 'yaccounts/django_messages.html' %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm-6 col-md-4 col-md-offset-4">
+      <h1 class="text-center login-title">{% trans 'Account Settings' %}</h1>
+      
+      <!-- Frame -->
+      <div class="account-wall">
+
+        <!-- Account Settings -->
+        <div class="form-settings">
+
+          <div class="text-center">
+            
+            <!-- Account Photo -->
+            <div id="photo">
+              {% if photo_url %}
+                <img src="{{ photo_url }}" class="img-thumbnail" style="margin-bottom: 5px;">
+              {% else %}
+                <img src="{% static 'yaccounts/images/gray-140x140.png' %}" class="img-thumbnail" style="margin-bottom: 5px;">
+              {% endif %}
+              <br>
+              <a class="btn btn-default btn-xs crop-image" href="#crop-image-window">{% trans "Change Photo" %}</a>
+            </div>
+
+            <!-- Upload Image Modal Window -->
+            <div id="crop-image-window" class="mfp-hide white-popup" style="text-align: center;">
+              <h3>{% trans "Upload Photo" %}</h3>
+              <form>
+                <input type="file" style="width: 80px;" accept="image/*" name="photo">
+              </form>
+              <br>
+              <img src="{% static 'yaccounts/images/gray-140x140.png' %}" class="img-thumbnail" style="width: 140px; height: 140px;">
+              <br>
+              <br>
+              <button class="btn btn-primary" DISABLED>
+                <span class="glyphicon glyphicon-upload"></span>
+                {% trans "Upload" %}
+              </button>
+            </div>
+
+          </div>
+          <br>
+
+          <div id="account-details">
+            
+            <!-- Name -->
+            <div class="form-group">
+              <label for="name">Full name</label>
+              <input type="text" class="form-control" placeholder="{% trans 'Full name' %}" id="name" value="{{ name }}" required autofocus>
+            </div>
+              
+            <!-- Email -->
+            <div class="form-group">
+              <label for="email">E-mail</label>
+              <input type="text" class="form-control" placeholder="{% trans 'Email address' %}" id="email" value="{{ email }}" required DISABLED>
+            </div>
+
+            <!-- Change Password -->
+            <a style="cursor: pointer;" onclick="$('#update-password').toggle();">{% trans "Change Password" %}</a>
+            <br>
+            <br>
+
+            <!-- Update Password -->
+            <div id="update-password" style="display: none;">
+              <div class="form-group">
+                <input type="password" class="form-control" placeholder="{% trans 'Current password' %}" id="password_old">
+              </div>
+              <div class="form-group">
+                <input type="password" class="form-control" placeholder="{% trans 'New password' %}" id="password_new">
+              </div>
+              <div class="form-group">
+                <input type="password" class="form-control" placeholder="{% trans 'Confirm password' %}" id="password_confirm">
+              </div>
+            </div>
+
+            <!-- Shave -->
+            <div id="save-messages"></div>
+            <button id="save" class="btn btn-lg btn-default btn-primary btn-block" type="submit">{% trans 'Save' %}</button>
+
+          </div>
+        </div>
+      </div>
+      <a href="{% url 'accounts:logout' %}" class="text-center new-account">
+        <span class="glyphicon glyphicon-off"></span> {% trans 'Logout' %}
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+
+  <script>
+
+    // Assorted variables.
+    var photo_update_api_url = '{{ photo_update_api_url }}';
+    var account_update_api_url = '{{ account_update_api_url }}';
+
+    var upload;
+
+    $(document).ready(function() {
+
+      /*
+       * Initialize modal window for image select/crop.
+       */
+      $('.crop-image').magnificPopup({ type: 'inline' });
+
+      /*
+       * Show file selected for upload.
+       */
+      $('#crop-image-window input').on('change', function(){
+        var input = this;
+        if (input.files && input.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) { $('#crop-image-window img').attr('src', e.target.result); }
+          reader.readAsDataURL(input.files[0]);
+          $('#crop-image-window button').attr('disabled', false);
+        }  
+      });
+
+      /*
+       * Listen to click on upload button.
+       */
+      $('#crop-image-window button').on('click', function() {
+
+        var that = this;
+        $(this).attr('disabled', true);
+        
+        // Build formdata.
+        var formData = new FormData($('#crop-image-window form').get(0));
+        var file = $('#crop-image-window input').get(0).files[0];
+        formData.append('file', file);
+
+        // Upload picture.
+        $.ajax({
+          url: photo_update_api_url,
+          type: 'POST',
+          data: formData,
+          // Options to tell JQuery not to process data or worry about content-type.
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function(data) {
+            $('#photo img').attr('src', data.url);
+            $('#crop-image-window').magnificPopup('close');
+            $(that).attr('disabled', false);
+          },
+          error: function(err) {
+            console.log(err);
+            alert('Unable to upload picture!');
+            $(that).attr('disabled', false);
+          }
+        });
+
+      });
+
+      /*
+       * Listen to click on save button.
+       */
+      $('#save').on('click', function() {
+
+        $('#saveMessage').html('');
+
+        // Stuff.
+        var that = this;
+        $(this).attr('disabled', true);
+
+        // Make API call to update account settings.
+        $.ajax({
+          url: account_update_api_url,
+          type: 'PUT',
+          data: JSON.stringify({
+            name: $('#name').val(),
+            password_old: $('#password_old').val(),
+            password_new: $('#password_new').val(),
+            password_confirm: $('#password_confirm').val()
+          }),
+          dataType: 'JSON',
+          success: function(data) {
+            $('#save-messages').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Saved</div>');
+            $(that).attr('disabled', false);
+          },
+          error: function(xhr) {
+            $('#save-messages').html('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Unable to save</div>');
+            $(that).attr('disabled', false);
+          }
+        });
+
+      });
+
+    });
+  </script>
+{% endblock %}

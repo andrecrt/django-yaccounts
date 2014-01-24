@@ -1,4 +1,3 @@
-import base64
 import datetime
 import json
 import logging
@@ -38,7 +37,8 @@ def index(request):
                               { 'name': request.user.name,
                                 'email': request.user.email,
                                 'photo_url': photo_url,
-                                'change_photo_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo') },
+                                'photo_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo'),
+                                'account_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:index') },
                               context_instance=RequestContext(request))
 
 
@@ -263,7 +263,7 @@ def create_account(request):
 
 def confirm_operation(request):
     """
-    Confirm operation (e.g. Account Activation, Password Reset, etc)
+    Confirm operation (e.g. Account activation, email change, etc)
     """
     #
     # Fetch token.

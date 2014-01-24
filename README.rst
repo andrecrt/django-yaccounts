@@ -76,6 +76,12 @@ settings.py
         'email_from': { 'name': 'Administrator', 'email': 'admin@example.com' }
     }
 
+6. Don't forget to set the 'MEDIA_URL' variable, which defines the root folder to where files will be uploaded (e.g. profile pictures) and the
+variable necessary for the full URL's of the pictures to be built::
+
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'static/uploads/')
+    MEDIA_URL = HOST_URL + '/static/uploads/'
+
 Logs
 ----
 

@@ -1,3 +1,17 @@
+/*
+ * Django Messages
+ */
+.django-messages {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+.django-messages .alert:last-child {
+  margin-bottom: 0;
+}
+
+/*
+ * Account login/create/reset
+ */
 .form-signin, .form-signup
 {
   max-width: 330px;
@@ -114,10 +128,33 @@
   font-weight:bold;
   font-size:20px;
 }
-.django-messages {
-  padding-left: 30px;
-  padding-right: 30px;
+
+/*
+ * Account Settings
+ */
+.form-settings {
+  max-width: 300px;
+  padding: 19px 29px 29px;
+  margin: 0 auto 20px;
 }
-.django-messages .alert:last-child {
-  margin-bottom: 0;
+.form-settings {
+  margin-bottom: 10px;
+}
+.form-settings input[type="text"],
+.form-settings input[type="password"] {
+  font-size: 16px;
+  height: auto;
+  margin-bottom: 15px;
+  padding: 7px 9px;
+}
+#crop-image-window input[type="file"] {
+  display: inline;
+}
+.white-popup {
+  position: relative;
+  background: #FFF;
+  padding: 20px;
+  width: auto;
+  max-width: 300px;
+  margin: 20px auto;
 }

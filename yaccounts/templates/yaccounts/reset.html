@@ -16,14 +16,8 @@
 
         <img class="profile-img" src="{% static 'yaccounts/images/avatar_default.png' %}" alt="Avatar">
         
-        <!-- Messages -->
-        {% if messages %}
-          <div class="django-messages">
-            {% for message in messages %}
-             <div class="alert alert-danger">{{ message }}</div>
-            {% endfor %}
-          </div>
-        {% endif %}
+        <!-- Django Messages -->
+        {% include 'yaccounts/django_messages.html' %}
 
         <!-- Email Login -->
         <form class="form-signup" method="POST" action="{% url 'accounts:reset' %}">
