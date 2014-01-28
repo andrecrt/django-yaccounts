@@ -1,0 +1,4 @@
+Hello, {{ name }}!
+
+In order to update your account's email address, please open the following URL:
+{{ confirmation_link }}

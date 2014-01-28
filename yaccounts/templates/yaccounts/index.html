@@ -57,13 +57,13 @@
             <!-- Name -->
             <div class="form-group">
               <label for="name">Full name</label>
-              <input type="text" class="form-control" placeholder="{% trans 'Full name' %}" id="name" value="{{ name }}" required autofocus>
+              <input type="text" class="form-control" placeholder="{% trans 'Full name' %}" id="name" value="{{ name }}" data-validate="salsa" data-required="true" required>
             </div>
               
             <!-- Email -->
             <div class="form-group">
               <label for="email">E-mail</label>
-              <input type="text" class="form-control" placeholder="{% trans 'Email address' %}" id="email" value="{{ email }}" required DISABLED>
+              <input type="text" class="form-control" placeholder="{% trans 'Email address' %}" id="email" value="{{ email }}" data-validate="salsa" data-required="true" required>
             </div>
 
             <!-- Change Password -->
@@ -74,18 +74,18 @@
             <!-- Update Password -->
             <div id="update-password" style="display: none;">
               <div class="form-group">
-                <input type="password" class="form-control" placeholder="{% trans 'Current password' %}" id="password_old">
+                <input type="password" class="form-control" placeholder="{% trans 'Current password' %}" id="password_old" data-validate="salsa">
               </div>
               <div class="form-group">
-                <input type="password" class="form-control" placeholder="{% trans 'New password' %}" id="password_new">
+                <input type="password" class="form-control" placeholder="{% trans 'New password' %}" id="password_new" data-validate="salsa">
               </div>
               <div class="form-group">
-                <input type="password" class="form-control" placeholder="{% trans 'Confirm password' %}" id="password_confirm">
+                <input type="password" class="form-control" placeholder="{% trans 'Confirm password' %}" id="password_confirm" data-validate="salsa">
               </div>
             </div>
 
             <!-- Shave -->
-            <div id="save-messages"></div>
+            <div id="messages"></div>
             <button id="save" class="btn btn-lg btn-default btn-primary btn-block" type="submit">{% trans 'Save' %}</button>
 
           </div>
@@ -111,6 +111,8 @@
     var upload;
 
     $(document).ready(function() {
+
+      $('#account-details').salsa();
 
       /*
        * Initialize modal window for image select/crop.
@@ -173,6 +175,11 @@
 
         $('#saveMessage').html('');
 
+        // Validate form.
+        if(!$('#account-details').salsa('validate')) {
+          return; 
+        }
+
         // Stuff.
         var that = this;
         $(this).attr('disabled', true);
@@ -183,17 +190,18 @@
           type: 'PUT',
           data: JSON.stringify({
             name: $('#name').val(),
+            email: $('#email').val(),
             password_old: $('#password_old').val(),
             password_new: $('#password_new').val(),
             password_confirm: $('#password_confirm').val()
           }),
           dataType: 'JSON',
           success: function(data) {
-            $('#save-messages').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Saved</div>');
+            $('#messages').html('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Saved</div>');
             $(that).attr('disabled', false);
           },
           error: function(xhr) {
-            $('#save-messages').html('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Unable to save</div>');
+            $('#account-details').salsa('processResponse', xhr.status, xhr.responseText);
             $(that).attr('disabled', false);
           }
         });

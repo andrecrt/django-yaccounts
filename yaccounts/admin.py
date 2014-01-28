@@ -5,7 +5,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
 from django.utils.translation import ugettext as _
 
-from models import User, UserPhoto, ActivationKey, AuthenticationLog, ResetRequest
+from models import User, UserPhoto, ActivationKey, AuthenticationLog, ResetRequest, EmailUpdate
 
 
 class UserCreationForm(forms.ModelForm):
@@ -115,6 +115,12 @@ class ResetRequestAdmin(admin.ModelAdmin):
     list_display = ('user', 'key', 'created_at', 'reset_at')
     search_fields = ('user__email', 'key')
 admin.site.register(ResetRequest, ResetRequestAdmin)
+
+
+class EmailUpdateAdmin(admin.ModelAdmin):
+    list_display = ('user', 'old_email', 'new_email', 'key', 'created_at', 'updated_at')
+    search_fields = ('user__email', 'old_email', 'new_email', 'key')
+admin.site.register(EmailUpdate, EmailUpdateAdmin)
 
 
 # Unregister the Group model from admin (we're not using it, yet)

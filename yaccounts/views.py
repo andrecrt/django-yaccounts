@@ -14,8 +14,8 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 from exceptions import InvalidParameter
-from models import AuthenticationLog, ResetRequest
-from utils import process_confirmation_token
+from models import AuthenticationLog, ResetRequest, EmailUpdate
+from utils import ConfirmationToken
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -278,7 +278,7 @@ def confirm_operation(request):
     #
     # Process token.
     #
-    processed_token = process_confirmation_token(token)
+    processed_token = ConfirmationToken.process(token)
     
     # Invalid token.
     if not processed_token:
@@ -294,8 +294,9 @@ def confirm_operation(request):
     # Validate operation.
     #
     
-    # Account activation.
-    if operation == 'activation':
+    ## Account activation.
+    #
+    if operation == ConfirmationToken.ACCOUNT_ACTIVATION:
         
         # Verify activation key, by attempting to authenticate user using it.
         user = authenticate(email=email, activation_key=key)
@@ -311,12 +312,54 @@ def confirm_operation(request):
             
         # Invalid activation key.
         else:
-            logger.info('Invalid activation key! Email: ' + email + ', Key: ' + key + ', Operation: ' + operation + ', IP Address: ' + request.META['REMOTE_ADDR'])
+            logger.info('Invalid activation key! Data: ' + str(processed_token) + ', IP Address: ' + request.META['REMOTE_ADDR'])
             raise Http404
+        
+    ## Email update.
+    #
+    elif operation == ConfirmationToken.ACCOUNT_EMAIL_UPDATE:
+        
+        # Fetch additional required params.
+        try:
+            new_email = processed_token['new_email']
+        except KeyError:
+            logger.error('Error updating email! Missing new_email. Data: ' + str(processed_token) + ', IP Address: ' + request.META['REMOTE_ADDR'])
+            raise Http404
+        
+        # Check if user with given email exists.
+        try:
+            user = get_user_model().objects.get(email=email)
+        except ObjectDoesNotExist:
+            logger.error('Error updating email! User does not exist. Data: ' + str(processed_token) + ', IP Address: ' + request.META['REMOTE_ADDR'])
+            raise Http404
+        
+        # Check if there is a pending update request for the user->email->key.
+        email_update = EmailUpdate.objects.filter(user=user, new_email=new_email, key=key, updated_at__isnull=True)
+        if not email_update:
+            logger.error('Error updating email! No pending update for given details. Data: ' + str(processed_token) + ', IP Address: ' + request.META['REMOTE_ADDR'])
+            raise Http404
+        
+        # GREAT SUCCESS!
+        else:
+            
+            # Update email.
+            user.update(email=new_email)
+            
+            # Mark key as used.
+            for update in email_update:
+                update.updated_at = datetime.datetime.now()
+                update.save()
+            
+            # Message.
+            messages.success(request, _("Your new email was confirmed."))
+            
+            # Redirect to account page.
+            return HttpResponseRedirect(reverse('accounts:index'))
     
-    # Invalid operation.
+    ## Invalid operation.
+    #
     else:
-        logger.info('Invalid account confirmation OPERATION! Email: ' + email + ', Key: ' + key + ', Operation: ' + operation + ', IP Address: ' + request.META['REMOTE_ADDR'])
+        logger.error('Invalid account confirmation OPERATION! Data: ' + str(processed_token) + ', IP Address: ' + request.META['REMOTE_ADDR'])
         raise Http404
 
 
@@ -387,7 +430,7 @@ def reset_confirm(request):
     #
     try:
         token = request.GET['t']
-        processed_token = process_confirmation_token(token)
+        processed_token = ConfirmationToken.process(token)
     except KeyError:
         raise Http404
     
@@ -413,7 +456,7 @@ def reset_confirm(request):
     #
     # Validate operation.
     #
-    if operation == 'password_reset':
+    if operation == ConfirmationToken.ACCOUNT_PASSWORD_RESET:
         
         # Check if an unused reset key exists.
         try:

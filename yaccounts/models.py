@@ -1,5 +1,3 @@
-import base64
-import json
 import logging
 from django.db import models
 from django.conf import settings
@@ -14,6 +12,7 @@ from yapi.utils import generate_key
 from yutils.email import EmailMessage
 
 from exceptions import InvalidParameter
+from utils import ConfirmationToken
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -131,7 +130,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         # Return.
         return user
     
-    def update(self, name=None, password=None):
+    def update(self, name=None, password=None, email=None):
         """
         Update user account.
         """
@@ -139,6 +138,8 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.name = name
         if password and password != '':
             self.set_password(password)
+        if email and email != '':
+            self.email = email
         self.save()
     
     
@@ -181,17 +182,6 @@ class ActivationKey(models.Model):
         activation_key.send_activation_link()
         return True
     
-    def get_activation_token(self):
-        """
-        Returns a Base64 encoded string containing the account's email and activation key.
-        """
-        token = {
-            'email': self.user.email,
-            'operation': 'activation',
-            'key': self.key
-        }
-        return base64.b64encode(json.dumps(token))
-    
     def send_activation_link(self):
         """
         Sends the activation URL to the customers's email.
@@ -200,7 +190,7 @@ class ActivationKey(models.Model):
             # Email variables.
             d = Context({
                 'name': self.user.name,
-                'activation_link': settings.HOST_URL + reverse('accounts:confirm') + '?t=' + self.get_activation_token()
+                'activation_link': settings.HOST_URL + reverse('accounts:confirm') + '?t=' + ConfirmationToken.generate(self.user.email, ConfirmationToken.ACCOUNT_ACTIVATION, self.key)
             })
             
             # Render plaintext email template.
@@ -311,17 +301,6 @@ class ResetRequest(models.Model):
             raise
         return True
     
-    def get_reset_token(self):
-        """
-        Returns a Base64 encoded string containing the account's email and key.
-        """
-        token = {
-            'email': self.user.email,
-            'operation': 'password_reset',
-            'key': self.key
-        }
-        return base64.b64encode(json.dumps(token))
-    
     def send_reset_link(self):
         """
         Sends the reset URL to the customers's email.
@@ -330,7 +309,7 @@ class ResetRequest(models.Model):
             # Email variables.
             d = Context({
                 'name': self.user.name,
-                'reset_link': settings.HOST_URL + reverse('accounts:reset_confirm') + '?t=' + self.get_reset_token()
+                'reset_link': settings.HOST_URL + reverse('accounts:reset_confirm') + '?t=' + ConfirmationToken.generate(self.user.email, ConfirmationToken.ACCOUNT_PASSWORD_RESET, self.key)
             })
             
             # Render plaintext email template.
@@ -361,6 +340,85 @@ class ResetRequest(models.Model):
                 raise
         except:
             logger.error('Unable to send password reset email', exc_info=1)
+            raise
+        
+        # Return great success.
+        return True
+    
+
+class EmailUpdate(models.Model):
+    """
+    Account email update request/validation.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    old_email = models.EmailField()
+    new_email = models.EmailField()
+    key = models.CharField(max_length=200, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+    
+    def __unicode__(self):
+        """
+        String representation of the model instance.
+        """
+        return str(self.user)
+    
+    @staticmethod
+    def new(user, email):
+        """
+        Creates an email update request for given user.
+        """
+        email_update = EmailUpdate(user=user, old_email=user.email, new_email=email, key=generate_key(salt=(str(user.email)+str(email))))
+        email_update.save()
+        try:
+            email_update.send_confirmation_link()
+        except:
+            email_update.delete()
+            raise
+        return True
+    
+    def send_confirmation_link(self):
+        """
+        Sends the confirmation URL to the customers's email.
+        """
+        try:
+            # Email variables.
+            d = Context({
+                'name': self.user.name,
+                'confirmation_link': settings.HOST_URL + reverse('accounts:confirm') + '?t=' + ConfirmationToken.generate(email=self.user.email,
+                                                                                                                          operation=ConfirmationToken.ACCOUNT_EMAIL_UPDATE,
+                                                                                                                          key=self.key,
+                                                                                                                          more={ 'new_email': self.new_email })
+            })
+            
+            # Render plaintext email template.
+            plaintext = get_template('yaccounts/email/email_update_confirmation.txt')
+            text_content = plaintext.render(d)
+            
+            # Render HTML email template.
+            html = get_template('yaccounts/email/email_update_confirmation.html')
+            html_content = html.render(d)
+            
+            # Email options.
+            subject = _("Confirm Email")
+            from_email = settings.YACCOUNTS['email_from']
+            to = [{ 'name': self.user.name, 'email': self.new_email }]
+            
+            # Build message and send.
+            email = EmailMessage(sender=from_email,
+                                recipients=to,
+                                subject=subject,
+                                text_content=text_content,
+                                html_content=html_content,
+                                tags=['Account Email Update'])
+            result = email.send()
+            
+            # Check if email wasn't sent.
+            if not result['sent']:
+                logger.error('Email Update Confirmation Not Sent! Result: ' + str(result['result']))
+                raise
+        except:
+            logger.error('Unable to send email confirmation update link', exc_info=1)
             raise
         
         # Return great success.
