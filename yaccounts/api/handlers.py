@@ -1,12 +1,13 @@
 import Image
 import logging
 import os
-
-from serializers import UserSerializer, UserPhotoSerializer
+from django.http.response import HttpResponse
 from yaccounts.forms import UserForm, UserPhotoForm
 from yaccounts.models import UserPhoto
 from yapi.authentication import SessionAuthentication, ApiKeyAuthentication
 from yapi.response import HTTPStatus, Response
+
+from serializers import UserSerializer, UserPhotoSerializer
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -64,11 +65,26 @@ class AccountPhotoHandler:
     API endpoint handler.
     """
     # HTTP methods allowed.
-    allowed_methods = ['POST']
+    allowed_methods = ['POST', 'GET']
     
     # Authentication & Authorization.
     authentication = [SessionAuthentication, ApiKeyAuthentication]
     
+    def get(self, request):
+        """
+        Process GET request.
+        """
+        # If user has photo.
+        if hasattr(request.auth['user'], 'userphoto'):
+            return Response(request=request,
+                            data=request.auth['user'].userphoto,
+                            serializer=UserPhotoSerializer,
+                            status=HTTPStatus.SUCCESS_200_OK)
+         
+        # No photozzz!
+        else:
+            return HttpResponse(status=HTTPStatus.CLIENT_ERROR_404_NOT_FOUND)
+
     def post(self, request):
         """
         Process POST request.

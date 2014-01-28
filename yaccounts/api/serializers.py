@@ -1,4 +1,6 @@
 import logging
+from django.conf import settings
+from django.core.urlresolvers import reverse
 from yapi.serializers import BaseSerializer
 
 # Instantiate logger.
@@ -19,14 +21,14 @@ class UserSerializer(BaseSerializer):
             'email': obj.email,
             'name': obj.name,
             'last_login': obj.last_login.strftime("%Y-%m-%d %H:%M:%S"),
-            'photo': None
+            'photo': {
+                'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo')
+            }
         }
         
         # If user has photo.
         if hasattr(obj, 'userphoto'):
-            simple['photo'] = {
-                'url': obj.userphoto.file.url
-            }
+            simple['photo']['image_url'] = obj.userphoto.file.url
         
         # Return.
         return simple
@@ -42,6 +44,6 @@ class UserPhotoSerializer(BaseSerializer):
         Please refer to the interface documentation.
         """
         simple = {
-            'url': obj.file.url
+            'image_url': obj.file.url
         }        
         return simple

@@ -155,7 +155,7 @@
           contentType: false,
           processData: false,
           success: function(data) {
-            $('#photo img').attr('src', data.url);
+            $('#photo img').attr('src', data.image_url);
             $('#crop-image-window').magnificPopup('close');
             $(that).attr('disabled', false);
           },
