@@ -34,6 +34,7 @@ setup(
     ],
     install_requires=[
         'PIL==1.1.7',
+        'python-twitter==1.1',
         'django-yapi',
         'django-yutils'
     ]

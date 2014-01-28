@@ -5,7 +5,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
 from django.utils.translation import ugettext as _
 
-from models import User, UserPhoto, ActivationKey, AuthenticationLog, ResetRequest, EmailUpdate
+from models import User, UserPhoto, ActivationKey, AuthenticationLog, ResetRequest, EmailUpdate, TwitterProfile
 
 
 class UserCreationForm(forms.ModelForm):
@@ -121,6 +121,12 @@ class EmailUpdateAdmin(admin.ModelAdmin):
     list_display = ('user', 'old_email', 'new_email', 'key', 'created_at', 'updated_at')
     search_fields = ('user__email', 'old_email', 'new_email', 'key')
 admin.site.register(EmailUpdate, EmailUpdateAdmin)
+
+
+class TwitterProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'twitter_user_id', 'screen_name')
+    search_fields = ('user__email', 'twitter_user_id', 'screen_name', 'access_token', 'access_token_secret')
+admin.site.register(TwitterProfile, TwitterProfileAdmin)
 
 
 # Unregister the Group model from admin (we're not using it, yet)

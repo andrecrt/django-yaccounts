@@ -423,3 +423,30 @@ class EmailUpdate(models.Model):
         
         # Return great success.
         return True
+    
+    
+class TwitterProfile(models.Model):
+    """
+    Twitter profiles connected to user accounts.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, unique=True)
+    twitter_user_id = models.CharField(max_length=200, unique=True, db_index=True)
+    screen_name = models.CharField(max_length=50)
+    access_token = models.CharField(max_length=200)
+    access_token_secret = models.CharField(max_length=200)
+    
+    def __unicode__(self):
+        """
+        String representation of the model instance.
+        """
+        return str(self.user)
+    
+    def update(self, userinfo, access_token):
+        """
+        Updates a user's Twitter profile.
+        """
+        self.screen_name = userinfo.screen_name
+        self.access_token = access_token['oauth_token']
+        self.access_token_secret = access_token['oauth_token_secret']
+        self.save()
+        return self

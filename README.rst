@@ -56,11 +56,12 @@ settings.py
 
 ``AUTH_USER_MODEL = 'yaccounts.User'``
 
-4. Configure authentication backends to enable the Authentication Key backend for account email confirmation::
+4. Configure authentication backends to enable Yaccount's authentication backends (e.g. Authentication Key, Twitter, etc) for account email confirmation::
 
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
-        'apps.accounts.backends.ActivationKeyAuthenticationBackend'
+        'yaccounts.backends.ActivationKeyAuthenticationBackend',
+        'yaccounts.backends.TwitterBackend'
     )
 
 5. Configure YACCOUNT's settings::
@@ -73,7 +74,13 @@ settings.py
         'signup_available': ['EMAIL'], # Only email signup enabled
         
         # Application emails 'sender'.
-        'email_from': { 'name': 'Administrator', 'email': 'admin@example.com' }
+        'email_from': { 'name': 'Administrator', 'email': 'admin@example.com' },
+        
+        # Twitter Application's OAuth Settings.
+        'twitter_oauth': {
+            'consumer_key': '{{ YOUR_APP_CONSUMER_KEY }}',
+            'consumer_secret': '{{ YOUR_APP_CONSUMER_SECRET }}'
+        }
     }
 
 6. Don't forget to set the 'MEDIA_URL' variable, which defines the root folder to where files will be uploaded (e.g. profile pictures) and the

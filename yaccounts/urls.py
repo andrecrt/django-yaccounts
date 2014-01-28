@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     
     # Twitter auth.
     url(r'^/login/twitter/?$', views_twitter.login_request, name='twitter_login'),
+    url(r'^/login/twitter/return/?$', views_twitter.login_return, name='twitter_return'),
     
     # Facebook auth.
     url(r'^/login/facebook/?$', views_facebook.login_request, name='facebook_login')

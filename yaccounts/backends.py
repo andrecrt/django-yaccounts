@@ -1,9 +1,9 @@
 import datetime
 import logging
 from django.contrib.auth import get_user_model
-
-from models import ActivationKey
 from django.core.exceptions import ObjectDoesNotExist
+
+from models import ActivationKey, TwitterProfile
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -45,6 +45,40 @@ class ActivationKeyAuthenticationBackend(object):
         # Return user.
         return user
 
+    def get_user(self, user_id):
+        """
+        Mandatory method for Authentication Backends.
+        """
+        try:
+            return get_user_model().objects.get(pk=user_id)
+        except get_user_model().DoesNotExist:
+            return None
+        
+        
+class TwitterBackend:
+    """
+    Custom backend authentication to enable Twitter OAuth login.
+    """
+
+    def authenticate(self, twitter_userinfo, twitter_access_token):
+        """
+        Mandatory method for Authentication Backends, validates provided set of credentials.
+        """
+        try:
+            # Validate credentials (i.e. check if this Twitter profile is already registered)
+            twitter_profile = TwitterProfile.objects.get(twitter_user_id=twitter_userinfo.id)
+        
+            # Always update Twitter account information that comes with OAuth access token
+            # (user might have revoked access to the application / changed screen name / etc)
+            twitter_profile.update(twitter_userinfo, twitter_access_token)
+            
+            # If we're here, these credentials are valid (an account exists that is connected to this Twitter profile)
+            return twitter_profile.user
+        
+        # Twitter profile not registered.
+        except ObjectDoesNotExist:
+            return None
+            
     def get_user(self, user_id):
         """
         Mandatory method for Authentication Backends.
