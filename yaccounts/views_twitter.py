@@ -7,11 +7,12 @@ import sha
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.core.validators import validate_email
 from django.db.utils import IntegrityError
-from django.http.response import HttpResponseRedirect, HttpResponse
+from django.http.response import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
@@ -272,3 +273,22 @@ def create_account(request):
                                'username': '@' + twitter_create['screen_name'],
                                'email': email },
                               context_instance=RequestContext(request))
+    
+    
+@login_required
+def disconnect_account(request):
+    """
+    Disconnects Twitter profile from user account.
+    """
+    
+    # Check if user has a Twitter profile connected.
+    if not hasattr(request.user, 'twitterprofile'):
+        messages.error(request, _("You don't have a Twitter account connected."))
+    
+    # Disconnect!
+    else:
+        request.user.twitterprofile.delete()
+        messages.success(request, _("Twitter account disconnected."))
+    
+    # Redirect to account page.
+    return HttpResponseRedirect(reverse('accounts:index'))

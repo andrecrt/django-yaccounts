@@ -21,5 +21,6 @@ urlpatterns = patterns('',
     # Twitter auth.
     url(r'^/login/twitter/?$', views_twitter.login_request, name='twitter_login'),
     url(r'^/login/twitter/return/?$', views_twitter.login_return, name='twitter_return'),
-    url(r'^/create/twitter/?$', views_twitter.create_account, name='twitter_create')
+    url(r'^/create/twitter/?$', views_twitter.create_account, name='twitter_create'),
+    url(r'^/disconnect/twitter/?$', views_twitter.disconnect_account, name='twitter_disconnect')
 )

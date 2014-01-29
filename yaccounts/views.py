@@ -31,6 +31,12 @@ def index(request):
         photo_url = request.user.userphoto.file.url
     else:
         photo_url = None
+        
+    # If user has Twitter profile.
+    if hasattr(request.user, 'twitterprofile'):
+        twitter_profile = request.user.twitterprofile
+    else:
+        twitter_profile = None
     
     # Render page.
     return render_to_response('yaccounts/index.html',
@@ -38,7 +44,8 @@ def index(request):
                                 'email': request.user.email,
                                 'photo_url': photo_url,
                                 'photo_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo'),
-                                'account_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:index') },
+                                'account_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:index'),
+                                'twitter_profile': twitter_profile },
                               context_instance=RequestContext(request))
 
 
