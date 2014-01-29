@@ -14,25 +14,22 @@
       <!-- Frame -->
       <div class="account-wall">
 
-        <img class="profile-img" src="{% static 'yaccounts/images/avatar_default.png' %}" alt="Avatar">
+        <img class="profile-img" src="{{ avatar }}" alt="Avatar">
+        <p style="text-align: center; font-weight: bold;">{{ username }}</p>
         
         <!-- Django Messages -->
         {% include 'yaccounts/django_messages.html' %}
 
-        <!-- Create Account Form -->
-        <form class="form-signup" method="POST" action="{% url 'accounts:create' %}">
+        <!-- Email Login -->
+        <form class="form-signup" method="POST" action="{% url 'accounts:twitter_create' %}">
           {% csrf_token %}
 
-          <!-- Full Name -->
-          <input type="text" class="form-control" placeholder="{% trans 'Full Name' %}" name="name" value="{{ name }}" required autofocus>
-          <br>
+          <p>
+            {% trans 'In order to activate your account, please provide us your e-mail address.' %}
+          </p>
 
           <!-- Email -->
           <input type="text" class="form-control" placeholder="{% trans 'Email' %}" name="email" value="{{ email }}" required>
-          <br>
-
-          <!-- Password -->
-          <input type="password" class="form-control" placeholder="{% trans 'Password' %}" name="password" required>
           <br>
           
           <!-- Page to redirect after login -->
@@ -41,7 +38,7 @@
           {% endif %}
           
           <!-- Submit -->
-          <button class="btn btn-lg btn-default btn-primary btn-block" type="submit">{% trans 'Sign up' %}</button>
+          <button class="btn btn-lg btn-default btn-primary btn-block" type="submit">{% trans 'Activate' %}</button>
 
           <span class="clearfix"></span>
         </form>

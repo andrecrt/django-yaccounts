@@ -429,7 +429,7 @@ class TwitterProfile(models.Model):
     """
     Twitter profiles connected to user accounts.
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, unique=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL)
     twitter_user_id = models.CharField(max_length=200, unique=True, db_index=True)
     screen_name = models.CharField(max_length=50)
     access_token = models.CharField(max_length=200)
@@ -440,6 +440,19 @@ class TwitterProfile(models.Model):
         String representation of the model instance.
         """
         return str(self.user)
+    
+    @staticmethod
+    def new(user, userinfo, access_token):
+        """
+        Links a Twitter profile with account.
+        """
+        twitter_profile = TwitterProfile(user=user,
+                                         twitter_user_id=userinfo.id,
+                                         screen_name=userinfo.screen_name,
+                                         access_token=access_token['oauth_token'],
+                                         access_token_secret=access_token['oauth_token_secret'])
+        twitter_profile.save()
+        return twitter_profile
     
     def update(self, userinfo, access_token):
         """

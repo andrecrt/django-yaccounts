@@ -15,10 +15,11 @@ urlpatterns = patterns('',
     url(r'^/reset/?$', views.reset_account, name='reset'),
     url(r'^/reset/confirm/?$', views.reset_confirm, name='reset_confirm'),
     
+    # Facebook auth.
+    url(r'^/login/facebook/?$', views_facebook.login_request, name='facebook_login'),
+    
     # Twitter auth.
     url(r'^/login/twitter/?$', views_twitter.login_request, name='twitter_login'),
     url(r'^/login/twitter/return/?$', views_twitter.login_return, name='twitter_return'),
-    
-    # Facebook auth.
-    url(r'^/login/facebook/?$', views_facebook.login_request, name='facebook_login')
+    url(r'^/create/twitter/?$', views_twitter.create_account, name='twitter_create')
 )

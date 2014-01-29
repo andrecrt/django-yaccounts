@@ -1,16 +1,24 @@
+import datetime
 import logging
 import oauth2 as oauth
+import random
 import urlparse
+import sha
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
-from django.http.response import HttpResponse, HttpResponseRedirect
+from django.core.validators import validate_email
+from django.db.utils import IntegrityError
+from django.http.response import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
 import twitter
 from twitter import TwitterError
+
+from models import TwitterProfile
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -114,7 +122,8 @@ def login_return(request):
     #
     user = authenticate(twitter_userinfo=userinfo, twitter_access_token=access_token)
     
-    # Account exists with given Twitter profile linked.
+    ##
+    # a) Twitter profile is linked with existing user account.
     if user:
         
         # If user is active, login account and redirect to next page (if provided, else account profile)
@@ -126,6 +135,140 @@ def login_return(request):
         else:
             messages.warning(request, _("Your account is disabled."))
             return render_to_response('yaccounts/login.html', context_instance=RequestContext(request))
+        
+    ##
+    # b) Unknown Twitter profile.
+    else:
+        
+        # i) If there is an account logged in, (attempt to) link the Twitter profile with it.
+        if request.user.is_authenticated():
+            try:
+                TwitterProfile.new(user=request.user, userinfo=userinfo, access_token=access_token)
+                messages.success(request, _("Twitter account connected successfully."))
+            except IntegrityError:
+                messages.error(request, _("You already have a Twitter profile linked to your account."))
+            return HttpResponseRedirect(reverse('accounts:index'))
+        
+        # ii) Create new account.
+        else:
+            # Place Twitter info in a session variable in order for it to be accessed in the registration page.
+            request.session['twitter_create'] = {
+                    'twitter_user_id': userinfo.id,
+                    'screen_name': userinfo.screen_name,
+                    'profile_image_url': userinfo.profile_image_url,
+                    'name': userinfo.name,
+                    'access_token': access_token,
+                    'expires': (datetime.datetime.now() + datetime.timedelta(seconds=5*60)).strftime('%s') # Convert to epoch to be JSON serializable.
+            }
+            return HttpResponseRedirect(reverse('accounts:twitter_create'))
+
+
+def create_account(request):
+    """
+    Create new account with Twitter credentials.
+    """
     
-    # Return.
-    return HttpResponse(userinfo)
+    #
+    # Lets validate if we should be here.
+    #
+    
+    # If user is authenticated, then this place shouldn't be reached.
+    # Twitter profile, if valid, should be linked with the logged in account and not create a new account.
+    if request.user.is_authenticated():
+        return HttpResponseRedirect(reverse('accounts:index'))
+    
+    # In order to create account with Twitter profile, its details should have been stored in session.
+    twitter_create = request.session.get('twitter_create', None)
+    if not twitter_create:
+        messages.error(request, _('Twitter login error #4'))
+        return HttpResponseRedirect(reverse('accounts:login'))
+    
+    # If time window for registration of new account with this Twitter profile has expired,
+    # delete it from session and restart Twitter login process.
+    if datetime.datetime.now() > datetime.datetime.fromtimestamp(float(twitter_create['expires'])):
+        del request.session['twitter_create']
+        return HttpResponseRedirect(reverse('accounts:twitter_login'))
+    
+    #
+    # Proceed with account creation.
+    #
+    email = ''
+    
+    # A form was received.
+    if request.method == 'POST':
+        
+        proceed = True
+        
+        # Fetch mandatory params.
+        try:
+            email = request.POST['email']
+        except KeyError:
+            proceed = False
+            messages.error(request, _("Please provide an e-mail address."))
+            
+        # Validate email address.
+        try:
+            validate_email(email)
+        except ValidationError:
+            proceed = False
+            messages.error(request, _("Please provide a valid email address."))
+            
+        # Check if Twitter profile is already connected to another account.
+        try:
+            TwitterProfile.objects.get(twitter_user_id=twitter_create['twitter_user_id'])
+            proceed = False
+            messages.error(request, _("Twitter profile already connected to another account."))
+        except ObjectDoesNotExist:
+            pass
+        
+        # Check if account exists with given email address.
+        try:
+            get_user_model().objects.get(email=email)
+            proceed = False
+            messages.error(request, _("Email already registered."))
+        except ObjectDoesNotExist:
+            pass
+        
+        #
+        # Everything checks! \o/
+        #
+        if proceed:
+            
+            # Create user with random password.
+            try:
+                
+                # Generate random password.
+                random_password = sha.new(sha.new(str(random.random())).hexdigest() \
+                                          + email \
+                                          + str(datetime.datetime.now())).hexdigest() \
+                                          + str(twitter_create['twitter_user_id']) \
+                                          + datetime.datetime.now().strftime('%s')
+                
+                # New user.
+                user = get_user_model().new(name=twitter_create['name'],
+                                            email=email,
+                                            password=random_password)
+                
+                # Twitter profile.
+                twitter_profile = TwitterProfile(user=user,
+                                                twitter_user_id=twitter_create['twitter_user_id'],
+                                                screen_name=twitter_create['screen_name'],
+                                                access_token=twitter_create['access_token']['oauth_token'],
+                                                access_token_secret=twitter_create['access_token']['oauth_token_secret'])
+                twitter_profile.save()
+
+                # Redirect to login page with message.
+                messages.success(request, _("An email was sent in order to confirm your account."))
+                return HttpResponseRedirect(reverse('accounts:login'))
+
+            # Error creating new user.
+            except:
+                logger.error('Error creating user via Twitter! ' + str(twitter_create), exc_info=1)
+                messages.error(request, _('Twitter login error #5'))
+    
+    # Render page.
+    return render_to_response('yaccounts/create_social.html',
+                              { 'avatar': twitter_create['profile_image_url'],
+                               'username': '@' + twitter_create['screen_name'],
+                               'email': email },
+                              context_instance=RequestContext(request))
