@@ -22,13 +22,13 @@ class UserSerializer(BaseSerializer):
             'name': obj.name,
             'last_login': obj.last_login.strftime("%Y-%m-%d %H:%M:%S"),
             'photo': {
-                'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo')
+                'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo'),
+                'image_url': obj.get_photo_url()
+            },
+            'api_keys': {
+                'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:api_keys')
             }
         }
-        
-        # If user has photo.
-        if hasattr(obj, 'userphoto'):
-            simple['photo']['image_url'] = obj.userphoto.file.url
         
         # Return.
         return simple
@@ -46,4 +46,29 @@ class UserPhotoSerializer(BaseSerializer):
         simple = {
             'image_url': obj.file.url
         }        
+        return simple
+    
+    
+class ApiKeySerializer(BaseSerializer):
+    """
+    Adds methods required for instance serialization.
+    """
+    
+    def to_simple(self, obj, user=None):
+        """
+        Please refer to the interface documentation.
+        """
+        # Build response.
+        simple = {
+            'id': obj.id,
+            'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:api_key_id', args=[obj.id]),
+            'key': obj.key,
+            'description': obj.description,
+            'created_at': obj.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'active': obj.active
+        }
+        if obj.last_used:
+            simple['last_used'] = obj.last_used.strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Return.
         return simple

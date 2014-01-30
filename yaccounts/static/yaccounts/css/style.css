@@ -138,7 +138,7 @@
   margin: 0 auto 20px;
 }
 .form-settings {
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 .form-settings input[type="text"],
 .form-settings input[type="password"] {
@@ -157,4 +157,7 @@
   width: auto;
   max-width: 300px;
   margin: 20px auto;
+}
+#api table td {
+  padding-bottom: 1.5em;
 }

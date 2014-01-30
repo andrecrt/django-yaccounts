@@ -4,6 +4,14 @@
 
 {% load staticfiles %}
 
+{% block head %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular-route.min.js"></script>
+<script src="{% static 'yaccounts/js/api_keys.js' %}"></script>
+
+{% endblock %}
+
 {% block body %}
 
 <!-- Django Messages -->
@@ -12,33 +20,38 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-6 col-md-5 col-md-offset-3">
+      
       <h1 class="text-center login-title">{% trans 'My Account' %}</h1>
       
-      <!-- Frame -->
+      <!-- BEGIN Frame -->
       <div class="account-wall">
 
-        <!-- Nav tabs -->
+        <!-- BEGIN Nav tabs -->
         <ul class="nav nav-tabs" style="padding: 0 25px 0 25px; margin-bottom: 25px;">
           <li class="active"><a href="#settings" data-toggle="tab">Settings</a></li>
           <li><a href="#social" data-toggle="tab">Connected Accounts</a></li>
           <li><a href="#api" data-toggle="tab">API Keys</a></li>
         </ul>
+        <!-- END Nav tabs -->
 
-        <!-- Tab panes -->
+        <!-- BEGIN Tab panes -->
         <div class="tab-content">
           
-          <!-- Account Settings -->
+          <!-- 
+            **********************
+            BEGIN Account Settings
+            **********************
+          -->
           <div class="tab-pane active" id="settings">
+            
             <div class="form-settings">
+              
+              <!-- BEGIN Account Photo -->
               <div class="text-center">
                 
-                <!-- Account Photo -->
+                <!-- Current Photo -->
                 <div id="photo">
-                  {% if photo_url %}
-                    <img src="{{ photo_url }}" class="img-thumbnail" style="margin-bottom: 5px;">
-                  {% else %}
-                    <img src="{% static 'yaccounts/images/gray-140x140.png' %}" class="img-thumbnail" style="margin-bottom: 5px;">
-                  {% endif %}
+                  <img src="{{ photo_url }}" class="img-thumbnail" style="margin-bottom: 5px;">
                   <br>
                   <a class="btn btn-default btn-xs crop-image" href="#crop-image-window">{% trans "Change Photo" %}</a>
                 </div>
@@ -60,8 +73,11 @@
                 </div>
 
               </div>
+              <!-- END Account Photo -->
+
               <br>
 
+              <!-- BEGIN Account Details -->
               <div id="account-details">
                 
                 <!-- Name -->
@@ -92,6 +108,10 @@
                   <div class="form-group">
                     <input type="password" class="form-control" placeholder="{% trans 'Confirm password' %}" id="password_confirm" data-validate="salsa">
                   </div>
+                  <p>
+                    <a href="{% url 'accounts:reset' %}">Forgot password?</a>
+                  </p>
+                  <br>
                 </div>
 
                 <!-- Shave -->
@@ -99,70 +119,108 @@
                 <button id="save" class="btn btn-lg btn-default btn-primary btn-block" type="submit">{% trans 'Save' %}</button>
 
               </div>
+              <!-- END Account Details -->
+
             </div>
           </div>
+          <!-- 
+            **********************
+            END Account Settings
+            **********************
+          -->
           
-          <!-- Connected Accounts -->
+          <!--
+            ************************
+            BEGIN Connected Accounts
+            ************************
+          -->
           <div class="tab-pane" id="social" style="padding: 0 25px 0 25px;">
-            <h3>
-              <i class="fa fa-twitter-square"></i>
-              Twitter
-            </h3>
-            <div class="row">
-              <div class="col-md-6">
-                <p style="margin-left: 30px;">
-                  {% if twitter_profile %}
-                    <a href="http://twitter.com/{{ twitter_profile.screen_name }}" target="_blank">
-                      @{{ twitter_profile.screen_name }}
-                    </a>
-                  {% else %}
-                    <span class="label label-danger">{% trans 'Not Connected' %}</span>
-                  {% endif %}
-                </p>
-              </div>
-              <div class="col-md-6" style="text-align: right;">
-                {% if twitter_profile %}
-                  <a href="{% url 'accounts:twitter_disconnect' %}" class="btn btn-default btn-xs">Disconnect</a>
-                {% else %}
-                  <a href="{% url 'accounts:twitter_login' %}" class="btn btn-default btn-primary btn-xs">Connect</a>
-                {% endif %}
-              </div>
-            </div>
-
-            <h3>
-              <i class="fa fa-facebook-square"></i></i>
-              Facebook
-            </h3>
-            <div class="row">
-              <div class="col-md-6">
-                <p style="margin-left: 30px;">
+            <div style="margin: 40px 0 20px 0;">
+              
+              <!-- Begin Facebook -->
+              <h3>
+                <i class="fa fa-facebook-square"></i></i>
+                Facebook
+              </h3>
+              <div class="row">
+                <div class="col-md-6">
+                  <p style="margin-left: 30px;">
+                    {% if facebook_profile %}
+                      FBSTUFF
+                    {% else %}
+                      <span class="label label-danger">{% trans 'Not Connected' %}</span>
+                    {% endif %}
+                  </p>
+                </div>
+                <div class="col-md-6" style="text-align: right;">
                   {% if facebook_profile %}
-                    FBSTUFF
+                    <button type="button" class="btn btn-default btn-xs">Disconnect</button>
                   {% else %}
-                    <span class="label label-danger">{% trans 'Not Connected' %}</span>
+                    <a href="{% url 'accounts:facebook_login' %}" class="btn btn-default btn-primary btn-sm">Connect</a>
                   {% endif %}
-                </p>
+                </div>
               </div>
-              <div class="col-md-6" style="text-align: right;">
-                {% if facebook_profile %}
-                  <button type="button" class="btn btn-default btn-xs">Disconnect</button>
-                {% else %}
-                  <button type="button" class="btn btn-default btn-primary btn-xs">Connect</button>
-                {% endif %}
+              <!-- End Facebook -->
+
+              <!-- Begin Twitter -->
+              <h3>
+                <i class="fa fa-twitter-square"></i>
+                Twitter
+              </h3>
+              <div class="row">
+                <div class="col-md-6">
+                  <p style="margin-left: 30px;">
+                    {% if twitter_profile %}
+                      <a href="http://twitter.com/{{ twitter_profile.screen_name }}" target="_blank">
+                        @{{ twitter_profile.screen_name }}
+                      </a>
+                    {% else %}
+                      <span class="label label-danger">{% trans 'Not Connected' %}</span>
+                    {% endif %}
+                  </p>
+                </div>
+                <div class="col-md-6" style="text-align: right;">
+                  {% if twitter_profile %}
+                    <a href="{% url 'accounts:twitter_disconnect' %}" class="btn btn-default btn-xs">Disconnect</a>
+                  {% else %}
+                    <a href="{% url 'accounts:twitter_login' %}" class="btn btn-default btn-primary btn-sm">Connect</a>
+                  {% endif %}
+                </div>
               </div>
+              <!-- End Twitter -->
+
             </div>
-
           </div>
+          <!--
+            ************************
+            END Connected Accounts
+            ************************
+          -->
 
-          <!-- API Keys -->
-          <div class="tab-pane" id="api">
-
+          <!--
+            **************
+            BEGIN API Keys
+            **************
+          -->
+          <div class="tab-pane" id="api" style="padding: 0 25px 0 25px;" ng-app="project">
+            <div ng-view></div>
           </div>
+          <!--
+            **************
+            END API Keys
+            **************
+          -->
+        
         </div>
+        <!-- END Tab panes -->
+      
       </div>
+      <!-- END Frame -->
+
       <a href="{% url 'accounts:logout' %}" class="text-center new-account">
         <span class="glyphicon glyphicon-off"></span> {% trans 'Logout' %}
       </a>
+
     </div>
   </div>
 </div>
@@ -176,6 +234,7 @@
     // Assorted variables.
     var photo_update_api_url = '{{ photo_update_api_url }}';
     var account_update_api_url = '{{ account_update_api_url }}';
+    var static_url = '{{ STATIC_URL }}';
 
     var upload;
 

@@ -1,13 +1,17 @@
 import Image
 import logging
 import os
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.http.response import HttpResponse
 from yaccounts.forms import UserForm, UserPhotoForm
 from yaccounts.models import UserPhoto
+from yapi.models import ApiKey
 from yapi.authentication import SessionAuthentication, ApiKeyAuthentication
 from yapi.response import HTTPStatus, Response
+from yapi.utils import generate_key
 
-from serializers import UserSerializer, UserPhotoSerializer
+from serializers import UserSerializer, UserPhotoSerializer, ApiKeySerializer
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -132,3 +136,134 @@ class AccountPhotoHandler:
                             data={ 'message': 'Invalid parameters', 'parameters': form.errors },
                             serializer=None,
                             status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
+
+
+class ApiKeysHandler:
+    """
+    API endpoint handler.
+    """
+    # HTTP methods allowed.
+    allowed_methods = ['GET', 'PUT']
+    
+    # Authentication & Authorization.
+    authentication = [SessionAuthentication, ApiKeyAuthentication]
+    
+    def get(self, request):
+        """
+        Process GET request.
+        """
+        #
+        # Lets start with all.
+        #
+        results = ApiKey.objects.filter(user=request.auth['user'])
+        
+        #
+        # Filters
+        #
+        filters = {}
+        
+        # Search description.
+        try:
+            description = request.GET['description']
+            if description != '':
+                results = results.filter(Q(description__icontains=description))
+                filters['description'] = description
+        except KeyError:
+            pass
+        
+        # Status.
+        try:
+            active = request.GET['active']
+            if active != '':
+                # Validate parameter.
+                if active.lower() != 'true' and active.lower() != 'false':
+                    return Response(request=request,
+                            data={ 'message': 'Invalid parameter value', 'param': 'active' },
+                            serializer=None,
+                            status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
+                # Business as usual...
+                else:
+                    is_active = active.lower() == 'true'
+                    results = results.filter(active=is_active)
+                    filters['active'] = is_active
+        except KeyError:
+            pass
+        
+        #
+        # Return.
+        #
+        return Response(request=request,
+                        data=results,
+                        filters=filters,
+                        serializer=ApiKeySerializer,
+                        pagination=False,
+                        status=HTTPStatus.SUCCESS_200_OK)
+        
+    def post(self, request):
+        """
+        Process POST request.
+        """
+        # Validate parameters.
+        try:
+            description = request.data['description']
+        except KeyError:
+            return Response(request=request,
+                            data={ 'message': 'Missing parameter: description' },
+                            serializer=None,
+                            status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
+            
+        # Create API key.
+        api_key = ApiKey(user=request.auth['user'],
+                        key=generate_key(request.auth['user'].email),
+                        description=description,
+                        active=True)
+        api_key.save()
+        
+        # Return.
+        return Response(request=request,
+                        data=api_key,
+                        serializer=ApiKeySerializer,
+                        status=HTTPStatus.SUCCESS_201_CREATED)
+
+
+class ApiKeyIdHandler:
+    """
+    API endpoint handler.
+    """
+    # HTTP methods allowed.
+    allowed_methods = ['GET', 'DELETE']
+    
+    # Authentication & Authorization.
+    authentication = [SessionAuthentication, ApiKeyAuthentication]
+    
+    def get(self, request, pk):
+        """
+        Process GET request.
+        """
+        # Check if API key with given ID exists for given user.
+        try:
+            api_key = ApiKey.objects.get(user=request.auth['user'], id=pk)
+        except ObjectDoesNotExist:
+            return HttpResponse(status=HTTPStatus.CLIENT_ERROR_404_NOT_FOUND)
+        
+        # Return.
+        return Response(request=request,
+                        data=api_key,
+                        serializer=ApiKeySerializer,
+                        status=HTTPStatus.SUCCESS_200_OK)
+        
+    def delete(self, request, pk):
+        """
+        Process DELETE request.
+        """
+        # Check if API key with given ID exists for given user.
+        try:
+            api_key = ApiKey.objects.get(user=request.auth['user'], id=pk)
+        except ObjectDoesNotExist:
+            return HttpResponse(status=HTTPStatus.CLIENT_ERROR_404_NOT_FOUND)
+        
+        # Delete API key.
+        api_key.delete()
+        
+        # Return.
+        return HttpResponse(status=HTTPStatus.SUCCESS_204_NO_CONTENT)

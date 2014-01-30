@@ -26,11 +26,6 @@ def index(request):
     """
     Account index.
     """
-    # If user has photo.
-    if hasattr(request.user, 'userphoto'):
-        photo_url = request.user.userphoto.file.url
-    else:
-        photo_url = None
         
     # If user has Twitter profile.
     if hasattr(request.user, 'twitterprofile'):
@@ -42,7 +37,7 @@ def index(request):
     return render_to_response('yaccounts/index.html',
                               { 'name': request.user.name,
                                 'email': request.user.email,
-                                'photo_url': photo_url,
+                                'photo_url': request.user.get_photo_url(),
                                 'photo_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo'),
                                 'account_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:index'),
                                 'twitter_profile': twitter_profile },

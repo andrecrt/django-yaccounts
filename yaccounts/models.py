@@ -141,6 +141,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         if email and email != '':
             self.email = email
         self.save()
+        
+    def get_photo_url(self):
+        """
+        Returns the account's photo URL.
+        """
+        # If user has set a photo.
+        if hasattr(self, 'userphoto'):
+            photo_url = self.userphoto.file.url
+    
+        # Else, return default avatar.
+        else:
+            photo_url = settings.HOST_URL + settings.STATIC_URL + 'yaccounts/images/gray-140x140.png'
+            
+        # Return.
+        return photo_url
     
     
 class UserPhoto(models.Model):
