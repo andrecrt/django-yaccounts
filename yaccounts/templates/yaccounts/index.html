@@ -7,7 +7,8 @@
 {% block head %}
 
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular-route.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular-resource.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular-cookies.min.js"></script>
 <script src="{% static 'yaccounts/js/api_keys.js' %}"></script>
 
 {% endblock %}
@@ -28,9 +29,9 @@
 
         <!-- BEGIN Nav tabs -->
         <ul class="nav nav-tabs" style="padding: 0 25px 0 25px; margin-bottom: 25px;">
-          <li class="active"><a href="#settings" data-toggle="tab">Settings</a></li>
+          <li><a href="#settings" data-toggle="tab">Settings</a></li>
           <li><a href="#social" data-toggle="tab">Connected Accounts</a></li>
-          <li><a href="#api" data-toggle="tab">API Keys</a></li>
+          <li class="active"><a href="#api" data-toggle="tab">API Keys</a></li>
         </ul>
         <!-- END Nav tabs -->
 
@@ -42,7 +43,7 @@
             BEGIN Account Settings
             **********************
           -->
-          <div class="tab-pane active" id="settings">
+          <div class="tab-pane" id="settings">
             
             <div class="form-settings">
               
@@ -202,8 +203,8 @@
             BEGIN API Keys
             **************
           -->
-          <div class="tab-pane" id="api" style="padding: 0 25px 0 25px;" ng-app="project">
-            <div ng-view></div>
+          <div class="tab-pane active" id="api" style="padding: 0 25px 0 25px;" ng-app="project" ng-controller="ApiKeysCtrl">
+            <div ng-include src="'{% static 'yaccounts/partials/api_keys.html' %}'"></div>
           </div>
           <!--
             **************
@@ -234,6 +235,7 @@
     // Assorted variables.
     var photo_update_api_url = '{{ photo_update_api_url }}';
     var account_update_api_url = '{{ account_update_api_url }}';
+    var api_keys_api_url = '{{ api_keys_api_url }}';
     var static_url = '{{ STATIC_URL }}';
 
     var upload;

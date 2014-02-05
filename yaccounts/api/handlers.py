@@ -4,14 +4,14 @@ import os
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.http.response import HttpResponse
-from yaccounts.forms import UserForm, UserPhotoForm
-from yaccounts.models import UserPhoto
 from yapi.models import ApiKey
 from yapi.authentication import SessionAuthentication, ApiKeyAuthentication
 from yapi.response import HTTPStatus, Response
 from yapi.utils import generate_key
 
 from serializers import UserSerializer, UserPhotoSerializer, ApiKeySerializer
+from yaccounts.forms import UserForm, UserPhotoForm
+from yaccounts.models import UserPhoto
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -143,11 +143,37 @@ class ApiKeysHandler:
     API endpoint handler.
     """
     # HTTP methods allowed.
-    allowed_methods = ['GET', 'PUT']
+    allowed_methods = ['POST', 'GET', 'PUT']
     
     # Authentication & Authorization.
     authentication = [SessionAuthentication, ApiKeyAuthentication]
     
+    def post(self, request):
+        """
+        Process POST request.
+        """
+        # Validate parameters.
+        try:
+            description = request.data['description']
+        except KeyError:
+            return Response(request=request,
+                            data={ 'message': 'Missing parameter: description' },
+                            serializer=None,
+                            status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
+            
+        # Create API key.
+        api_key = ApiKey(user=request.auth['user'],
+                        key=generate_key(request.auth['user'].email),
+                        description=description,
+                        active=True)
+        api_key.save()
+        
+        # Return.
+        return Response(request=request,
+                        data=api_key,
+                        serializer=ApiKeySerializer,
+                        status=HTTPStatus.SUCCESS_201_CREATED)
+        
     def get(self, request):
         """
         Process GET request.
@@ -155,7 +181,7 @@ class ApiKeysHandler:
         #
         # Lets start with all.
         #
-        results = ApiKey.objects.filter(user=request.auth['user'])
+        results = ApiKey.objects.filter(user=request.auth['user']).order_by('created_at')
         
         #
         # Filters
@@ -198,32 +224,6 @@ class ApiKeysHandler:
                         serializer=ApiKeySerializer,
                         pagination=False,
                         status=HTTPStatus.SUCCESS_200_OK)
-        
-    def post(self, request):
-        """
-        Process POST request.
-        """
-        # Validate parameters.
-        try:
-            description = request.data['description']
-        except KeyError:
-            return Response(request=request,
-                            data={ 'message': 'Missing parameter: description' },
-                            serializer=None,
-                            status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
-            
-        # Create API key.
-        api_key = ApiKey(user=request.auth['user'],
-                        key=generate_key(request.auth['user'].email),
-                        description=description,
-                        active=True)
-        api_key.save()
-        
-        # Return.
-        return Response(request=request,
-                        data=api_key,
-                        serializer=ApiKeySerializer,
-                        status=HTTPStatus.SUCCESS_201_CREATED)
 
 
 class ApiKeyIdHandler:
@@ -231,7 +231,7 @@ class ApiKeyIdHandler:
     API endpoint handler.
     """
     # HTTP methods allowed.
-    allowed_methods = ['GET', 'DELETE']
+    allowed_methods = ['GET', 'PUT', 'DELETE']
     
     # Authentication & Authorization.
     authentication = [SessionAuthentication, ApiKeyAuthentication]
@@ -251,6 +251,42 @@ class ApiKeyIdHandler:
                         data=api_key,
                         serializer=ApiKeySerializer,
                         status=HTTPStatus.SUCCESS_200_OK)
+        
+    def put(self, request, pk):
+        """
+        Process PUT request.
+        """
+        # Check if API key with given ID exists for given user.
+        try:
+            api_key = ApiKey.objects.get(user=request.auth['user'], id=pk)
+        except ObjectDoesNotExist:
+            return HttpResponse(status=HTTPStatus.CLIENT_ERROR_404_NOT_FOUND)
+        
+        # Optional params.
+        try:
+            description = request.data['description']
+        except KeyError:
+            description = None
+        try:
+            active = request.data['active']
+            # Validate param.
+            if active == '' or (active != True and active != False):
+                return Response(request=request,
+                            data={ 'message': 'Invalid parameter value', 'param': 'active' },
+                            serializer=None,
+                            status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
+        except:
+            active = None
+            
+        # Update.
+        if description:
+            api_key.description = description
+        if active == True or active == False:
+            api_key.active = active
+        api_key.save()
+        
+        # Return.
+        return HttpResponse(status=HTTPStatus.SUCCESS_200_OK)
         
     def delete(self, request, pk):
         """

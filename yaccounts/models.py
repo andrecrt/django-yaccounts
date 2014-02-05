@@ -449,6 +449,8 @@ class TwitterProfile(models.Model):
     screen_name = models.CharField(max_length=50)
     access_token = models.CharField(max_length=200)
     access_token_secret = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(blank=True, null=True)
     
     def __unicode__(self):
         """

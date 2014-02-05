@@ -1,5 +1,5 @@
 <p>
-  <button class="btn btn-default btn-primary">
+  <button class="btn btn-default btn-primary" ng-click="newApiKey()">
     <span class="glyphicon glyphicon-plus"></span>
     New API Key
   </button>
@@ -8,54 +8,43 @@
 <div style="margin: 25px 0 0 0;">
 
   <table class="table">
-    <tr>
+    <tr ng-repeat="apiKey in apiKeys">
       <td>
         <span style="font-size: 10pt">
-          8bbaf529881c3824163c99c75072b7885211aa6952826d59
+          {{apiKey.key}}
         </span>
         <br>
         <span style="font-size: 8pt; color: gray; margin-right: 10px;">
-          The quick brown fox jumps over the lazy dog
+          <strong>Created:</strong> {{apiKey.created_at}} / <strong>Last Used:</strong>
+          <!-- BEGIN Whether API Key was used or not -->
+          <span ng-if="apiKey.last_used">{{apiKey.last_used}}</span>
+          <span ng-if="!apiKey.last_used"><i>never</i></span>
+          <!-- END Whether API Key was used or not -->
           <br>
-          Created: 28/08/1984 / Last Used: 28/01/2014
+          {{apiKey.description}}
         </span>
         <br>
+
+        <!-- BEGIN Actions -->
         <div class="btn-group" style="float: right;">
-          <button type="button" class="btn btn-default btn-xs btn-success dropdown-toggle" data-toggle="dropdown">
-            Enabled
+          <button type="button" class="btn btn-default btn-xs btn-success dropdown-toggle" data-toggle="dropdown" ng-if="apiKey.active">
+          	Enabled
             <span class="caret"></span>
           </button>
-          <ul class="dropdown-menu">
-            <li><a href="#"><span class="glyphicon glyphicon-pause"></span> Disable</a></li>
-            <li><a href="#"><span class="glyphicon glyphicon-edit"></span> Edit Description</a></li>
-            <li class="divider"></li>
-            <li><a href="#"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
-          </ul>
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <span style="font-size: 10pt">
-          8bbaf529881c3824163c99c75072b7885211aa6952826d59
-        </span>
-        <br>
-        <span style="font-size: 8pt; color: gray; margin-right: 10px;">
-          Created: 28/08/1984 / Last Used: 28/01/2014
-        </span>
-        <br>
-        <div class="btn-group" style="float: right;">
-          <button type="button" class="btn btn-default btn-xs btn-danger dropdown-toggle" data-toggle="dropdown">
+          <button type="button" class="btn btn-default btn-xs btn-danger dropdown-toggle" data-toggle="dropdown" ng-if="!apiKey.active">
             Disabled
             <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-            <li><a href="#"><span class="glyphicon glyphicon-play"></span> Enable</a></li>
-            <li><a href="#"><span class="glyphicon glyphicon-edit"></span> Edit Description</a></li>
+            <li ng-if="apiKey.active"><a href="#" ng-click="setActive(apiKey, false)"><span class="glyphicon glyphicon-pause"></span> Disable</a></li>
+            <li ng-if="!apiKey.active"><a href="#" ng-click="setActive(apiKey, true)"><span class="glyphicon glyphicon-play"></span> Enable</a></li>
+            <li><a href="#" ng-click="editDescription(apiKey)"><span class="glyphicon glyphicon-edit"></span> Edit Description</a></li>
             <li class="divider"></li>
-            <li><a href="#"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+            <li><a href="#" ng-click="destroy(apiKey)"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
           </ul>
         </div>
+        <!-- END Actions -->
+
       </td>
     </tr>
   </table>

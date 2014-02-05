@@ -124,7 +124,7 @@ admin.site.register(EmailUpdate, EmailUpdateAdmin)
 
 
 class TwitterProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'twitter_user_id', 'screen_name')
+    list_display = ('user', 'twitter_user_id', 'screen_name', 'created_at', 'last_used')
     search_fields = ('user__email', 'twitter_user_id', 'screen_name', 'access_token', 'access_token_secret')
 admin.site.register(TwitterProfile, TwitterProfileAdmin)
 

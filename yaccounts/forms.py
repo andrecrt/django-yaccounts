@@ -86,7 +86,7 @@ class UserForm(forms.Form):
         
         # Return.
         return cleaned_data
-    
+
 
 class UserPhotoForm(forms.Form):
     """

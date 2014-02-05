@@ -72,6 +72,10 @@ class TwitterBackend:
             # (user might have revoked access to the application / changed screen name / etc)
             twitter_profile.update(twitter_userinfo, twitter_access_token)
             
+            # Update last used timestamp.
+            twitter_profile.last_used = datetime.datetime.now()
+            twitter_profile.save()
+            
             # If we're here, these credentials are valid (an account exists that is connected to this Twitter profile)
             return twitter_profile.user
         

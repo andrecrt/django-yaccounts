@@ -40,6 +40,7 @@ def index(request):
                                 'photo_url': request.user.get_photo_url(),
                                 'photo_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo'),
                                 'account_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:index'),
+                                'api_keys_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:api_keys'),
                                 'twitter_profile': twitter_profile },
                               context_instance=RequestContext(request))
 
