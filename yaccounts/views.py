@@ -241,7 +241,10 @@ def create_account(request):
             
             # If all parameters check, then a new account is created.
             try:
-                get_user_model().new(name=name, email=email, password=password)
+                get_user_model().new(name=name,
+                                     email=email,
+                                     password=password,
+                                     registration_type='email')
                 messages.success(request, _("An email was sent in order to confirm your account."))
                 return HttpResponseRedirect(reverse('accounts:login'))
             

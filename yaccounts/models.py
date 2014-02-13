@@ -49,12 +49,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     Custom User model.
     """
+    # How was the account created.
+    REGISTRATION_TYPES = (
+        ('email', 'E-mail'),
+        ('facebook', 'Facebook'),
+        ('twitter', 'Twitter')
+    )
+    
     # Fields.
     email = models.EmailField(verbose_name=_("Email address"), max_length=100, unique=True, db_index=True)
     name = models.CharField(verbose_name=_("Name"), max_length=100)
     is_active = models.BooleanField(verbose_name=_("Active"), help_text=_("Designates whether this user should be treated as active. Unselect this instead of deleting accounts."), default=False)
     is_staff = models.BooleanField(verbose_name=_("Staff status"), help_text=_("Designates whether the user can log into this admin site."), default=False)
     created_at = models.DateTimeField(verbose_name=_("Created at"), auto_now_add=True)
+    created_via = models.CharField(max_length=20, choices=REGISTRATION_TYPES, blank=True)
 
     # Required for custom User models.
     objects = UserManager()
@@ -96,7 +104,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
         
     @staticmethod
-    def new(name, email, password):
+    def new(name, email, password, registration_type):
         """
         Creates a new account.
         """
@@ -116,6 +124,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         
         # All check, create account.
         user = User.objects.create_user(name=name, email=email, password=password)
+        user.created_via = registration_type
+        user.save()
         
         # Create activation key.
         try:

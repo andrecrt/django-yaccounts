@@ -73,13 +73,13 @@ class UserAdmin(UserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('email', 'name', 'is_active', 'is_staff', 'is_superuser', 'created_at', 'last_login')
-    list_filter = ('is_active', 'is_staff', 'is_superuser')
+    list_display = ('email', 'name', 'is_active', 'is_staff', 'is_superuser', 'created_at', 'created_via', 'last_login')
+    list_filter = ('is_active', 'is_staff', 'is_superuser', 'created_via')
     fieldsets = (
         (None, { 'fields': ('name', 'email', 'password') }),
         #('Permissions', { 'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions') }), # We're not using Django authorization, yet.
         ('Permissions', { 'fields': ('is_active', 'is_staff', 'is_superuser') }),
-        ('Important dates', { 'fields': ('last_login', 'created_at') })
+        ('Important dates', { 'fields': ('last_login', 'created_at', 'created_via') })
     )
     add_fieldsets = (
         (None, { 'classes': ('wide',), 'fields': ('name', 'email', 'password1', 'password2') }),
@@ -87,7 +87,7 @@ class UserAdmin(UserAdmin):
     search_fields = ('email',)
     ordering = ('email',)
     filter_horizontal = ('user_permissions',)
-    readonly_fields = ('last_login', 'created_at')
+    readonly_fields = ('last_login', 'created_at', 'created_via')
 
 # Register the custom User admin.
 admin.site.register(User, UserAdmin)

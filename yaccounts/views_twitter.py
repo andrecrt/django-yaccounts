@@ -247,7 +247,8 @@ def create_account(request):
                 # New user.
                 user = get_user_model().new(name=twitter_create['name'],
                                             email=email,
-                                            password=random_password)
+                                            password=random_password,
+                                            registration_type='twitter')
                 
                 # Twitter profile.
                 twitter_profile = TwitterProfile(user=user,
