@@ -21,7 +21,7 @@
         {% include 'yaccounts/django_messages.html' %}
 
         <!-- Email Login -->
-        <form class="form-signup" method="POST" action="{% url 'accounts:twitter_create' %}">
+        <form class="form-signup" method="POST" action="{{ post_url }}">
           {% csrf_token %}
 
           <p>

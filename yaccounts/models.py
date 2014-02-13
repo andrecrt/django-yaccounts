@@ -480,3 +480,49 @@ class TwitterProfile(models.Model):
         self.access_token_secret = access_token['oauth_token_secret']
         self.save()
         return self
+    
+    
+class FacebookProfile(models.Model):
+    """
+    Holds a user's Fakebook profile.
+    """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    facebook_user_id = models.CharField(max_length=50, unique=True, db_index=True)
+    name = models.CharField(max_length=50)
+    access_token = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(blank=True, null=True)
+
+    def __unicode__(self):
+        """
+        String representation of the model instance.
+        """
+        return str(self.user)
+    
+    @staticmethod
+    def new(user, userinfo, access_token):
+        """
+        Links a Facebook profile with account.
+        """
+        facebook_profile = FacebookProfile(user=user,
+                                           facebook_user_id=userinfo.id,
+                                           name=userinfo.name,
+                                           access_token=access_token)
+        facebook_profile.save()
+        return facebook_profile
+    
+    def update(self, userinfo, access_token):
+        """
+        Updates a user's Facebook profile.
+        """
+        self.name = userinfo.name
+        self.access_token = access_token
+        self.save()
+        return self
+        
+    @staticmethod
+    def get_profile_image_url(fbid):
+        """
+        Returns the link to the profile image, given the user's Facebook ID.
+        """
+        return 'https://graph.facebook.com/' + fbid + '/picture?type=large'

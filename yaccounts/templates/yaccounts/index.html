@@ -29,9 +29,9 @@
 
         <!-- BEGIN Nav tabs -->
         <ul class="nav nav-tabs" style="padding: 0 25px 0 25px; margin-bottom: 25px;">
-          <li><a href="#settings" data-toggle="tab">Settings</a></li>
+          <li class="active"><a href="#settings" data-toggle="tab">Settings</a></li>
           <li><a href="#social" data-toggle="tab">Connected Accounts</a></li>
-          <li class="active"><a href="#api" data-toggle="tab">API Keys</a></li>
+          <li><a href="#api" data-toggle="tab">API Keys</a></li>
         </ul>
         <!-- END Nav tabs -->
 
@@ -43,7 +43,7 @@
             BEGIN Account Settings
             **********************
           -->
-          <div class="tab-pane" id="settings">
+          <div class="tab-pane active" id="settings">
             
             <div class="form-settings">
               
@@ -147,7 +147,9 @@
                 <div class="col-md-6">
                   <p style="margin-left: 30px;">
                     {% if facebook_profile %}
-                      FBSTUFF
+                      <a href="http://facebook.com/profile.php?id={{ facebook_profile.facebook_user_id }}" target="_blank">
+                        {{ facebook_profile.name }}
+                      </a>
                     {% else %}
                       <span class="label label-danger">{% trans 'Not Connected' %}</span>
                     {% endif %}
@@ -155,7 +157,7 @@
                 </div>
                 <div class="col-md-6" style="text-align: right;">
                   {% if facebook_profile %}
-                    <button type="button" class="btn btn-default btn-xs">Disconnect</button>
+                    <a href="{% url 'accounts:facebook_disconnect' %}" class="btn btn-default btn-xs">Disconnect</a>
                   {% else %}
                     <a href="{% url 'accounts:facebook_login' %}" class="btn btn-default btn-primary btn-sm">Connect</a>
                   {% endif %}
@@ -203,7 +205,7 @@
             BEGIN API Keys
             **************
           -->
-          <div class="tab-pane active" id="api" style="padding: 0 25px 0 25px;" ng-app="project" ng-controller="ApiKeysCtrl">
+          <div class="tab-pane" id="api" style="padding: 0 25px 0 25px;" ng-app="project" ng-controller="ApiKeysCtrl">
             <div ng-include src="'{% static 'yaccounts/partials/api_keys.html' %}'"></div>
           </div>
           <!--

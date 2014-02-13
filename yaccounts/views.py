@@ -32,6 +32,12 @@ def index(request):
         twitter_profile = request.user.twitterprofile
     else:
         twitter_profile = None
+        
+    # If user has Facebook profile.
+    if hasattr(request.user, 'facebookprofile'):
+        facebook_profile = request.user.facebookprofile
+    else:
+        facebook_profile = None
     
     # Render page.
     return render_to_response('yaccounts/index.html',
@@ -41,7 +47,7 @@ def index(request):
                                 'photo_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo'),
                                 'account_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:index'),
                                 'api_keys_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:api_keys'),
-                                'twitter_profile': twitter_profile },
+                                'twitter_profile': twitter_profile, 'facebook_profile': facebook_profile },
                               context_instance=RequestContext(request))
 
 

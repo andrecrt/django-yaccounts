@@ -4,6 +4,7 @@ import oauth2 as oauth
 import random
 import urlparse
 import sha
+import twitter
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, get_user_model
@@ -16,8 +17,6 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
-import twitter
-from twitter import TwitterError
 
 from models import TwitterProfile
 
@@ -48,7 +47,7 @@ def login_request(request):
         settings.YACCOUNTS['signup_available'].index('TWITTER')
     except ValueError:
         messages.add_message(request, messages.ERROR, _('Twitter login not available.'))
-        return render_to_response('yaccounts/login.html', context_instance=RequestContext(request))
+        return HttpResponseRedirect(reverse('accounts:index'))
     
     # If there is an URL to return when login finishes,
     # store it in session in order to make it acessible in
@@ -82,13 +81,13 @@ def login_return(request):
     request_token = request.session.get('request_token', None)
     if not request_token:
         messages.add_message(request, messages.ERROR, _('Twitter login error #1'))
-        return render_to_response('yaccounts/login.html', context_instance=RequestContext(request))
+        return HttpResponseRedirect(reverse('accounts:index'))
     
     # If the token from session and token from Twitter does not match,
     # it means something bad happened to tokens.
     elif request_token['oauth_token'] != request.GET.get('oauth_token', None):
         messages.add_message(request, messages.ERROR, _('Twitter login error #2'))
-        return render_to_response('yaccounts/login.html', context_instance=RequestContext(request))
+        return HttpResponseRedirect(reverse('accounts:index'))
     
     
     # Now that we're here, we don't need this in session variables anymore. Cleanup.
@@ -114,9 +113,9 @@ def login_return(request):
                           access_token_key=access_token['oauth_token'],
                           access_token_secret=access_token['oauth_token_secret'])
         userinfo = api.VerifyCredentials()
-    except TwitterError:
+    except twitter.TwitterError:
         messages.add_message(request, messages.ERROR, _('Twitter login error #3'))
-        return render_to_response('yaccounts/login.html', context_instance=RequestContext(request))
+        return HttpResponseRedirect(reverse('accounts:index'))
     
     #
     # Finally, authenticate user with given Twitter credentials.
@@ -135,7 +134,7 @@ def login_return(request):
         # User account is inactive.
         else:
             messages.warning(request, _("Your account is disabled."))
-            return render_to_response('yaccounts/login.html', context_instance=RequestContext(request))
+            return HttpResponseRedirect(reverse('accounts:login'))
         
     ##
     # b) Unknown Twitter profile.
@@ -271,7 +270,8 @@ def create_account(request):
     return render_to_response('yaccounts/create_social.html',
                               { 'avatar': twitter_create['profile_image_url'],
                                'username': '@' + twitter_create['screen_name'],
-                               'email': email },
+                               'email': email,
+                               'post_url': reverse('accounts:twitter_create') },
                               context_instance=RequestContext(request))
     
     

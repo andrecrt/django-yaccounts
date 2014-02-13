@@ -61,7 +61,8 @@ settings.py
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
         'yaccounts.backends.ActivationKeyAuthenticationBackend',
-        'yaccounts.backends.TwitterBackend'
+        'yaccounts.backends.TwitterBackend',
+        'yaccounts.backends.FacebookBackend'
     )
 
 5. Configure YACCOUNT's settings::
@@ -80,7 +81,13 @@ settings.py
         'twitter_oauth': {
             'consumer_key': '{{ YOUR_APP_CONSUMER_KEY }}',
             'consumer_secret': '{{ YOUR_APP_CONSUMER_SECRET }}'
-        }
+        },
+        
+        # Facebook Application's OAuth Settings.
+        'facebook_oauth': {
+	         'app_id': '{{ APP_ID }}',
+	         'app_secret': '{{ APP_SECRET }}'
+	    }
     }
 
 6. Don't forget to set the 'MEDIA_URL' variable, which defines the root folder to where files will be uploaded (e.g. profile pictures) and the
