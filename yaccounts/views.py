@@ -106,6 +106,7 @@ def login_account(request):
                     # Log authentication.
                     AuthenticationLog.new(email=email,
                                           valid_credentials=True,
+                                          credentials_type='email',
                                           account_status='active',
                                           success=True,
                                           ip_address=request.META['REMOTE_ADDR'],
@@ -124,6 +125,7 @@ def login_account(request):
                     # Log authentication.
                     AuthenticationLog.new(email=email,
                                           valid_credentials=True,
+                                          credentials_type='email',
                                           account_status='pending_activation',
                                           success=False,
                                           ip_address=request.META['REMOTE_ADDR'],
@@ -140,6 +142,7 @@ def login_account(request):
                     # Log authentication.
                     AuthenticationLog.new(email=email,
                                           valid_credentials=True,
+                                          credentials_type='email',
                                           account_status='disabled',
                                           success=False,
                                           ip_address=request.META['REMOTE_ADDR'],
@@ -170,6 +173,7 @@ def login_account(request):
                 # Log authentication.
                 AuthenticationLog.new(email=email,
                                       valid_credentials=False,
+                                      credentials_type='email',
                                       account_status=account_status,
                                       success=False,
                                       ip_address=request.META['REMOTE_ADDR'],
@@ -244,7 +248,7 @@ def create_account(request):
                 get_user_model().new(name=name,
                                      email=email,
                                      password=password,
-                                     registration_type='email')
+                                     credentials_type='email')
                 messages.success(request, _("An email was sent in order to confirm your account."))
                 return HttpResponseRedirect(reverse('accounts:login'))
             

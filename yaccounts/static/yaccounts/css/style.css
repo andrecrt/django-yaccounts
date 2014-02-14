@@ -161,3 +161,12 @@
 #api table td {
   padding-bottom: 1.5em;
 }
+.active-indicator {
+  background-color: #46a800;
+  -webkit-border-radius: 5px;
+  display: inline-block;
+  height: 10px;
+  line-height: 10px;
+  padding: 0;
+  width: 10px;
+}

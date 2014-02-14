@@ -30,6 +30,22 @@ class UserSerializer(BaseSerializer):
             }
         }
         
+        # Twitter Profile.
+        if hasattr(obj, 'twitterprofile'):
+            simple['twitter_profile'] = {
+                'twitter_user_id': obj.twitterprofile.twitter_user_id,
+                'screen_name': obj.twitterprofile.screen_name,
+                'profile_link': 'http://twitter.com/' + obj.twitterprofile.screen_name
+            }
+        
+        # Facebook Profile.
+        if hasattr(obj, 'facebookprofile'):
+            simple['facebook_profile'] = {
+                'facebook_user_id': obj.facebookprofile.facebook_user_id,
+                'name': obj.facebookprofile.name,
+                'profile_link': 'http://facebook.com/profile.php?id=' + obj.facebookprofile.facebook_user_id
+            }
+        
         # Return.
         return simple
     

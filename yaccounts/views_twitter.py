@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import oauth2 as oauth
 import random
@@ -18,7 +19,7 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
 
-from models import TwitterProfile
+from models import AuthenticationLog, TwitterProfile
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -126,14 +127,43 @@ def login_return(request):
     # a) Twitter profile is linked with existing user account.
     if user:
         
+        # Additional information on the request that should be logged.
+        metadata = { 'user_agent': request.META['HTTP_USER_AGENT'] }
+        
         # If user is active, login account and redirect to next page (if provided, else account profile)
         if user.is_active:
+            
+            # Create user login session.
             login(request, user)
+            
+            # Log authentication.
+            AuthenticationLog.new(email=user.email,
+                                  valid_credentials=True,
+                                  credentials_type='twitter',
+                                  account_status='active',
+                                  success=True,
+                                  ip_address=request.META['REMOTE_ADDR'],
+                                  metadata=json.dumps(metadata))
+            
+            # Redirect to either page referenced as next or accounts index.
             return HttpResponseRedirect(request.session.get('login_next', reverse('accounts:index')))
         
         # User account is inactive.
         else:
+            
+            # Log authentication.
+            AuthenticationLog.new(email=user.email,
+                                  valid_credentials=True,
+                                  credentials_type='twitter',
+                                  account_status='disabled',
+                                  success=False,
+                                  ip_address=request.META['REMOTE_ADDR'],
+                                  metadata=json.dumps(metadata))
+            
+            # Message.
             messages.warning(request, _("Your account is disabled."))
+            
+            # Return.
             return HttpResponseRedirect(reverse('accounts:login'))
         
     ##
@@ -248,7 +278,7 @@ def create_account(request):
                 user = get_user_model().new(name=twitter_create['name'],
                                             email=email,
                                             password=random_password,
-                                            registration_type='twitter')
+                                            credentials_type='twitter')
                 
                 # Twitter profile.
                 twitter_profile = TwitterProfile(user=user,

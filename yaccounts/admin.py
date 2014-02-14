@@ -105,9 +105,9 @@ admin.site.register(ActivationKey, ActivationKeyAdmin)
 
 
 class AuthenticationLogAdmin(admin.ModelAdmin):
-    list_display = ('date', 'email', 'valid_credentials', 'account_status', 'ip_address', 'metadata', 'success')
+    list_display = ('date', 'email', 'valid_credentials', 'credentials_type', 'account_status', 'ip_address', 'metadata', 'success')
     search_fields = ('email', 'ip_address')
-    list_filter = ('valid_credentials', 'success', 'account_status')
+    list_filter = ('valid_credentials', 'credentials_type', 'success', 'account_status')
 admin.site.register(AuthenticationLog, AuthenticationLogAdmin)
 
 

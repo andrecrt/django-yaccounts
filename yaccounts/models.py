@@ -18,6 +18,14 @@ from utils import ConfirmationToken
 logger = logging.getLogger(__name__)
 
 
+# Supported user credentials for authentication.
+CREDENTIAL_TYPES = (
+    ('email', 'E-mail'),
+    ('facebook', 'Facebook'),
+    ('twitter', 'Twitter')
+)
+
+
 class UserManager(BaseUserManager):
     """
     Since the custom User model defines different fields than Django's default, this custom
@@ -48,21 +56,14 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """
     Custom User model.
-    """
-    # How was the account created.
-    REGISTRATION_TYPES = (
-        ('email', 'E-mail'),
-        ('facebook', 'Facebook'),
-        ('twitter', 'Twitter')
-    )
-    
+    """    
     # Fields.
     email = models.EmailField(verbose_name=_("Email address"), max_length=100, unique=True, db_index=True)
     name = models.CharField(verbose_name=_("Name"), max_length=100)
     is_active = models.BooleanField(verbose_name=_("Active"), help_text=_("Designates whether this user should be treated as active. Unselect this instead of deleting accounts."), default=False)
     is_staff = models.BooleanField(verbose_name=_("Staff status"), help_text=_("Designates whether the user can log into this admin site."), default=False)
     created_at = models.DateTimeField(verbose_name=_("Created at"), auto_now_add=True)
-    created_via = models.CharField(max_length=20, choices=REGISTRATION_TYPES, blank=True)
+    created_via = models.CharField(max_length=20, choices=CREDENTIAL_TYPES, blank=True)
 
     # Required for custom User models.
     objects = UserManager()
@@ -104,7 +105,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
         
     @staticmethod
-    def new(name, email, password, registration_type):
+    def new(name, email, password, credentials_type):
         """
         Creates a new account.
         """
@@ -124,7 +125,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         
         # All check, create account.
         user = User.objects.create_user(name=name, email=email, password=password)
-        user.created_via = registration_type
+        user.created_via = credentials_type
         user.save()
         
         # Create activation key.
@@ -268,6 +269,7 @@ class AuthenticationLog(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     email = models.CharField(max_length=100)
     valid_credentials = models.BooleanField(default=False)
+    credentials_type = models.CharField(max_length=20, choices=CREDENTIAL_TYPES, blank=True)
     account_status = models.CharField(max_length=20, choices=ACCOUNT_STATUS)
     success = models.BooleanField(default=False)
     ip_address = models.CharField(max_length=50)
@@ -280,13 +282,14 @@ class AuthenticationLog(models.Model):
         return self.email
     
     @staticmethod
-    def new(email, valid_credentials, account_status, success, ip_address, metadata):
+    def new(email, valid_credentials, credentials_type, account_status, success, ip_address, metadata):
         """
         Logs an authentication event.
         """
         # Build authentication log.
         authlog = AuthenticationLog(email=email,
                                     valid_credentials=valid_credentials,
+                                    credentials_type=credentials_type,
                                     account_status=account_status,
                                     success=success,
                                     ip_address=ip_address,
