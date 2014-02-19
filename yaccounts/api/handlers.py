@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.http.response import HttpResponse
 from yapi.models import ApiKey
 from yapi.authentication import SessionAuthentication, ApiKeyAuthentication
+from yapi.resource import Resource
 from yapi.response import HTTPStatus, Response
 from yapi.utils import generate_key
 
@@ -17,7 +18,7 @@ from yaccounts.models import UserPhoto
 logger = logging.getLogger(__name__)
 
 
-class AccountHandler:
+class AccountHandler(Resource):
     """
     API endpoint handler.
     """
@@ -64,7 +65,7 @@ class AccountHandler:
                             status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
         
         
-class AccountPhotoHandler:
+class AccountPhotoHandler(Resource):
     """
     API endpoint handler.
     """
@@ -138,7 +139,7 @@ class AccountPhotoHandler:
                             status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
 
 
-class ApiKeysHandler:
+class ApiKeysHandler(Resource):
     """
     API endpoint handler.
     """
@@ -226,7 +227,7 @@ class ApiKeysHandler:
                         status=HTTPStatus.SUCCESS_200_OK)
 
 
-class ApiKeyIdHandler:
+class ApiKeyIdHandler(Resource):
     """
     API endpoint handler.
     """
