@@ -3,8 +3,6 @@ import datetime
 import facebook
 import json
 import logging
-import random
-import sha
 import urllib
 from django.conf import settings
 from django.contrib import messages
@@ -18,6 +16,7 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
+from yapi.utils import generate_key
 
 from models import AuthenticationLog, FacebookProfile
 
@@ -251,11 +250,8 @@ def create_account(request):
             try:
                 
                 # Generate random password.
-                random_password = sha.new(sha.new(str(random.random())).hexdigest() \
-                                          + email \
-                                          + str(datetime.datetime.now())).hexdigest() \
-                                          + str(facebook_create['facebook_user_id']) \
-                                          + datetime.datetime.now().strftime('%s')
+                random_password = generate_key(email + str(datetime.datetime.now()) + str(facebook_create['facebook_user_id']))
+                random_password += datetime.datetime.now().strftime('%s')
                 
                 # New user.
                 user = get_user_model().new(name=facebook_create['name'],

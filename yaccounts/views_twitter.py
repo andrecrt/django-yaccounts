@@ -2,9 +2,7 @@ import datetime
 import json
 import logging
 import oauth2 as oauth
-import random
 import urlparse
-import sha
 import twitter
 from django.conf import settings
 from django.contrib import messages
@@ -18,6 +16,7 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
+from yapi.utils import generate_key
 
 from models import AuthenticationLog, TwitterProfile
 
@@ -268,11 +267,8 @@ def create_account(request):
             try:
                 
                 # Generate random password.
-                random_password = sha.new(sha.new(str(random.random())).hexdigest() \
-                                          + email \
-                                          + str(datetime.datetime.now())).hexdigest() \
-                                          + str(twitter_create['twitter_user_id']) \
-                                          + datetime.datetime.now().strftime('%s')
+                random_password = generate_key(email + str(datetime.datetime.now()) + str(twitter_create['twitter_user_id']))
+                random_password += datetime.datetime.now().strftime('%s')
                 
                 # New user.
                 user = get_user_model().new(name=twitter_create['name'],
