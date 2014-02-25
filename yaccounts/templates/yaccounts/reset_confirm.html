@@ -20,7 +20,7 @@
         {% include 'yaccounts/django_messages.html' %}
 
         <!-- Email Login -->
-        <form class="form-signup" method="POST" action="{% url 'accounts:reset_confirm'%}?t={{ token }}">
+        <form class="form-signup" method="POST" action="{% url 'yaccounts:reset_confirm'%}?t={{ token }}">
           {% csrf_token %}
 
           <!-- Password -->
@@ -39,7 +39,7 @@
       
       </div>
 
-      <a href="{% url 'accounts:login' %}" class="text-center new-account">{% trans 'Back to login' %}</a>
+      <a href="{% url 'yaccounts:login' %}" class="text-center new-account">{% trans 'Back to login' %}</a>
 
     </div>
   </div>

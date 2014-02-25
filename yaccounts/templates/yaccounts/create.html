@@ -20,7 +20,7 @@
         {% include 'yaccounts/django_messages.html' %}
 
         <!-- Create Account Form -->
-        <form class="form-signup" method="POST" action="{% url 'accounts:create' %}">
+        <form class="form-signup" method="POST" action="{% url 'yaccounts:create' %}">
           {% csrf_token %}
 
           <!-- Full Name -->
@@ -48,7 +48,7 @@
       
       </div>
 
-      <a href="{% url 'accounts:login' %}" class="text-center new-account">{% trans 'Already have an account?' %}</a>
+      <a href="{% url 'yaccounts:login' %}" class="text-center new-account">{% trans 'Already have an account?' %}</a>
 
     </div>
   </div>

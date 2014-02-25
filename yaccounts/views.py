@@ -44,9 +44,9 @@ def index(request):
                               { 'name': request.user.name,
                                 'email': request.user.email,
                                 'photo_url': request.user.get_photo_url(),
-                                'photo_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo'),
-                                'account_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:index'),
-                                'api_keys_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:api_keys'),
+                                'photo_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':yaccounts:photo'),
+                                'account_update_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':yaccounts:index'),
+                                'api_keys_api_url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':yaccounts:api_keys'),
                                 'twitter_profile': twitter_profile, 'facebook_profile': facebook_profile },
                               context_instance=RequestContext(request))
 
@@ -57,7 +57,7 @@ def login_account(request):
     """
     # If a user is logged in, redirect to account page.
     if request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     ################################################################
     #                     A form was submitted.                    #
@@ -115,7 +115,7 @@ def login_account(request):
                     #
                     # *** If login successful, REDIRECT to profile page or to provided url. ***
                     #
-                    return HttpResponseRedirect(request.POST.get('next', reverse('accounts:index')))
+                    return HttpResponseRedirect(request.POST.get('next', reverse('yaccounts:index')))
                 
                 #
                 # b) Account is PENDING ACTIVATION.
@@ -205,7 +205,7 @@ def logout_account(request):
     """
     if request.user.is_authenticated():
         logout(request)
-    return HttpResponseRedirect(request.GET.get('next', reverse('accounts:index')))
+    return HttpResponseRedirect(request.GET.get('next', reverse('yaccounts:index')))
 
 
 def create_account(request):
@@ -214,7 +214,7 @@ def create_account(request):
     """
     # If a user is logged in, redirect to account page.
     if request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     ################################################################
     #                     A form was submitted.                    #
@@ -250,7 +250,7 @@ def create_account(request):
                                      password=password,
                                      credentials_type='email')
                 messages.success(request, _("An email was sent in order to confirm your account."))
-                return HttpResponseRedirect(reverse('accounts:login'))
+                return HttpResponseRedirect(reverse('yaccounts:login'))
             
             # Invalid parameters.
             except InvalidParameter as e:
@@ -324,7 +324,7 @@ def confirm_operation(request):
             login(request, user)
             
             # Redirect to account page.
-            return HttpResponseRedirect(reverse('accounts:index'))
+            return HttpResponseRedirect(reverse('yaccounts:index'))
             
         # Invalid activation key.
         else:
@@ -370,7 +370,7 @@ def confirm_operation(request):
             messages.success(request, _("Your new email was confirmed."))
             
             # Redirect to account page.
-            return HttpResponseRedirect(reverse('accounts:index'))
+            return HttpResponseRedirect(reverse('yaccounts:index'))
     
     ## Invalid operation.
     #
@@ -510,7 +510,7 @@ def reset_confirm(request):
                 
                 # Redirect to account page.
                 messages.success(request, _("Your password was updated."))
-                return HttpResponseRedirect(reverse('accounts:index'))
+                return HttpResponseRedirect(reverse('yaccounts:index'))
         
         # Render page.
         return render_to_response('yaccounts/reset_confirm.html',

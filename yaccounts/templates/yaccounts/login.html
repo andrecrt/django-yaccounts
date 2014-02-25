@@ -20,18 +20,18 @@
         <div class="social-box">
           <div class="row mg-btm">
             <div class="col-md-12">
-              <a href="{% url 'accounts:facebook_login' %}" class="btn btn-primary btn-block">
+              <a href="{% url 'yaccounts:facebook_login' %}" class="btn btn-primary btn-block">
                 <i class="fa fa-facebook-square"></i></i>
-                &nbsp;&nbsp;Login with Facebook
+                &nbsp;&nbsp;{% trans 'Login with Facebook' %}
               </a>
             </div>
           </div>
           <br>
           <div class="row">
             <div class="col-md-12">
-              <a href="{% url 'accounts:twitter_login' %}" class="btn btn-info btn-block" >
+              <a href="{% url 'yaccounts:twitter_login' %}" class="btn btn-info btn-block" >
                 <i class="fa fa-twitter-square"></i>
-                &nbsp;&nbsp;Login with Twitter
+                &nbsp;&nbsp;{% trans 'Login with Twitter' %}
               </a>
             </div>
           </div>
@@ -47,7 +47,7 @@
         {% include 'yaccounts/django_messages.html' %}
 
         <!-- Email Login -->
-        <form class="form-signin" method="POST" action="{% url 'accounts:login' %}">
+        <form class="form-signin" method="POST" action="{% url 'yaccounts:login' %}">
           {% csrf_token %}
 
           <!-- Email -->
@@ -68,14 +68,14 @@
           <label class="checkbox pull-left"><input type="checkbox" value="remember-me" name="remember"> {% trans 'Remember me' %}</label>
           
           <!-- Reset password -->
-          <a href="{% url 'accounts:reset' %}" class="pull-right need-help">{% trans 'Forgot password?' %} </a>
+          <a href="{% url 'yaccounts:reset' %}" class="pull-right need-help">{% trans 'Forgot password?' %} </a>
 
           <span class="clearfix"></span>
         </form>
       
       </div>
 
-      <a href="{% url 'accounts:create' %}" class="text-center new-account">{% trans 'Create an account' %}</a>
+      <a href="{% url 'yaccounts:create' %}" class="text-center new-account">{% trans 'Create an account' %}</a>
 
     </div>
   </div>

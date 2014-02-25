@@ -47,17 +47,17 @@ def login_request(request):
         settings.YACCOUNTS['signup_available'].index('TWITTER')
     except ValueError:
         messages.add_message(request, messages.ERROR, _('Twitter login not available.'))
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     # If there is an URL to return when login finishes,
     # store it in session in order to make it acessible in
     # the twitter return method (would be better to pass it in the URLs?)
-    request.session['login_next'] = request.GET.get('next', reverse('accounts:index'))
+    request.session['login_next'] = request.GET.get('next', reverse('yaccounts:index'))
     
     # Step 1: Get a request token. This is a temporary token that is used for 
     # having the user authorize an access token and to sign the request to obtain 
     # said access token.
-    oauth_callback = settings.HOST_URL + reverse('accounts:twitter_return')
+    oauth_callback = settings.HOST_URL + reverse('yaccounts:twitter_return')
     resp, content = client.request(request_token_url + '?oauth_callback=' + oauth_callback, 'GET')
     if resp['status'] != '200':
         logger.error('Twitter Login Error: unable to request token. ' + content)
@@ -81,13 +81,13 @@ def login_return(request):
     request_token = request.session.get('request_token', None)
     if not request_token:
         messages.add_message(request, messages.ERROR, _('Twitter login error #1'))
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     # If the token from session and token from Twitter does not match,
     # it means something bad happened to tokens.
     elif request_token['oauth_token'] != request.GET.get('oauth_token', None):
         messages.add_message(request, messages.ERROR, _('Twitter login error #2'))
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     
     # Now that we're here, we don't need this in session variables anymore. Cleanup.
@@ -115,7 +115,7 @@ def login_return(request):
         userinfo = api.VerifyCredentials()
     except twitter.TwitterError:
         messages.add_message(request, messages.ERROR, _('Twitter login error #3'))
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     #
     # Finally, authenticate user with given Twitter credentials.
@@ -145,7 +145,7 @@ def login_return(request):
                                   metadata=json.dumps(metadata))
             
             # Redirect to either page referenced as next or accounts index.
-            return HttpResponseRedirect(request.session.get('login_next', reverse('accounts:index')))
+            return HttpResponseRedirect(request.session.get('login_next', reverse('yaccounts:index')))
         
         # User account is inactive.
         else:
@@ -163,7 +163,7 @@ def login_return(request):
             messages.warning(request, _("Your account is disabled."))
             
             # Return.
-            return HttpResponseRedirect(reverse('accounts:login'))
+            return HttpResponseRedirect(reverse('yaccounts:login'))
         
     ##
     # b) Unknown Twitter profile.
@@ -176,7 +176,7 @@ def login_return(request):
                 messages.success(request, _("Twitter account connected successfully."))
             except IntegrityError:
                 messages.error(request, _("You already have a Twitter profile linked to your account."))
-            return HttpResponseRedirect(reverse('accounts:index'))
+            return HttpResponseRedirect(reverse('yaccounts:index'))
         
         # ii) Create new account.
         else:
@@ -189,7 +189,7 @@ def login_return(request):
                     'access_token': access_token,
                     'expires': (datetime.datetime.now() + datetime.timedelta(seconds=5*60)).strftime('%s') # Convert to epoch to be JSON serializable.
             }
-            return HttpResponseRedirect(reverse('accounts:twitter_create'))
+            return HttpResponseRedirect(reverse('yaccounts:twitter_create'))
 
 
 def create_account(request):
@@ -204,19 +204,19 @@ def create_account(request):
     # If user is authenticated, then this place shouldn't be reached.
     # Twitter profile, if valid, should be linked with the logged in account and not create a new account.
     if request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     # In order to create account with Twitter profile, its details should have been stored in session.
     twitter_create = request.session.get('twitter_create', None)
     if not twitter_create:
         messages.error(request, _('Twitter login error #4'))
-        return HttpResponseRedirect(reverse('accounts:login'))
+        return HttpResponseRedirect(reverse('yaccounts:login'))
     
     # If time window for registration of new account with this Twitter profile has expired,
     # delete it from session and restart Twitter login process.
     if datetime.datetime.now() > datetime.datetime.fromtimestamp(float(twitter_create['expires'])):
         del request.session['twitter_create']
-        return HttpResponseRedirect(reverse('accounts:twitter_login'))
+        return HttpResponseRedirect(reverse('yaccounts:twitter_login'))
     
     #
     # Proceed with account creation.
@@ -286,7 +286,7 @@ def create_account(request):
 
                 # Redirect to login page with message.
                 messages.success(request, _("An email was sent in order to confirm your account."))
-                return HttpResponseRedirect(reverse('accounts:login'))
+                return HttpResponseRedirect(reverse('yaccounts:login'))
 
             # Error creating new user.
             except:
@@ -298,7 +298,7 @@ def create_account(request):
                               { 'avatar': twitter_create['profile_image_url'],
                                'username': '@' + twitter_create['screen_name'],
                                'email': email,
-                               'post_url': reverse('accounts:twitter_create') },
+                               'post_url': reverse('yaccounts:twitter_create') },
                               context_instance=RequestContext(request))
     
     
@@ -318,4 +318,4 @@ def disconnect_account(request):
         messages.success(request, _("Twitter account disconnected."))
     
     # Redirect to account page.
-    return HttpResponseRedirect(reverse('accounts:index'))
+    return HttpResponseRedirect(reverse('yaccounts:index'))

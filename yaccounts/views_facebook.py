@@ -51,15 +51,15 @@ def login_request(request):
         settings.YACCOUNTS['signup_available'].index('FACEBOOK')
     except ValueError:
         messages.add_message(request, messages.ERROR, _('Facebook login not available.'))
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     # If there is an URL to return when login finishes,
     # store it in session in order to make it acessible in
     # the facebook return method (would be better to pass it in the URLs?)
-    request.session['login_next'] = request.GET.get('next', reverse('accounts:index'))
+    request.session['login_next'] = request.GET.get('next', reverse('yaccounts:index'))
     
     # Start authentication redirecting to respective page.
-    return HttpResponseRedirect(authorize_url + '?client_id=' + app_id + '&redirect_uri=' + settings.HOST_URL + reverse('accounts:facebook_return'))
+    return HttpResponseRedirect(authorize_url + '?client_id=' + app_id + '&redirect_uri=' + settings.HOST_URL + reverse('yaccounts:facebook_return'))
 
 
 def login_return(request):
@@ -75,14 +75,14 @@ def login_return(request):
     code = request.GET.get('code', None)
     if not code:
         messages.add_message(request, messages.ERROR, _('Facebook login error #1'))
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     ###########################
     # 2) Request access token #
     ###########################
         
     request_access_token_url = access_token_url + '?client_id=' + app_id \
-                                 + '&redirect_uri=' + settings.HOST_URL + reverse('accounts:facebook_return') \
+                                 + '&redirect_uri=' + settings.HOST_URL + reverse('yaccounts:facebook_return') \
                                  + '&client_secret=' + app_secret \
                                  + '&code=' + code
     response = cgi.parse_qs(urllib.urlopen(request_access_token_url).read())
@@ -90,7 +90,7 @@ def login_return(request):
         access_token = response['access_token'][-1]
     except KeyError:
         messages.add_message(request, messages.ERROR, _('Facebook login error #2'))
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     # Verify credentials.
     # Validate user access token. If we can fetch it's information, the token is good!
@@ -99,7 +99,7 @@ def login_return(request):
         userinfo = UserInfo(fb_api.get_object('me'))
     except:
         messages.add_message(request, messages.ERROR, _('Facebook login error #3'))
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     #########################################################
     # 3) Authenticate user with given Facebook credentials. #
@@ -129,7 +129,7 @@ def login_return(request):
                                   metadata=json.dumps(metadata))
             
             # Redirect to either page referenced as next or accounts index.
-            return HttpResponseRedirect(request.session.get('login_next', reverse('accounts:index')))
+            return HttpResponseRedirect(request.session.get('login_next', reverse('yaccounts:index')))
         
         # User account is inactive.
         else:
@@ -147,7 +147,7 @@ def login_return(request):
             messages.warning(request, _("Your account is disabled."))
             
             # Return.
-            return HttpResponseRedirect(reverse('accounts:login'))
+            return HttpResponseRedirect(reverse('yaccounts:login'))
         
     ##
     # b) Unknown Facebook profile.
@@ -160,7 +160,7 @@ def login_return(request):
                 messages.success(request, _("Facebook account connected successfully."))
             except IntegrityError:
                 messages.error(request, _("You already have a Facebook profile linked to your account."))
-            return HttpResponseRedirect(reverse('accounts:index'))
+            return HttpResponseRedirect(reverse('yaccounts:index'))
         
         # ii) Create new account.
         else:
@@ -172,7 +172,7 @@ def login_return(request):
                     'access_token': access_token,
                     'expires': (datetime.datetime.now() + datetime.timedelta(seconds=5*60)).strftime('%s') # Convert to epoch to be JSON serializable.
             }
-            return HttpResponseRedirect(reverse('accounts:facebook_create'))
+            return HttpResponseRedirect(reverse('yaccounts:facebook_create'))
         
         
 def create_account(request):
@@ -187,19 +187,19 @@ def create_account(request):
     # If user is authenticated, then this place shouldn't be reached.
     # Facebook profile, if valid, should be linked with the logged in account and not create a new account.
     if request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('accounts:index'))
+        return HttpResponseRedirect(reverse('yaccounts:index'))
     
     # In order to create account with Facebook profile, its details should have been stored in session.
     facebook_create = request.session.get('facebook_create', None)
     if not facebook_create:
         messages.error(request, _('Facebook login error #4'))
-        return HttpResponseRedirect(reverse('accounts:login'))
+        return HttpResponseRedirect(reverse('yaccounts:login'))
     
     # If time window for registration of new account with this Facebook profile has expired,
     # delete it from session and restart Facebook login process.
     if datetime.datetime.now() > datetime.datetime.fromtimestamp(float(facebook_create['expires'])):
         del request.session['facebook_create']
-        return HttpResponseRedirect(reverse('accounts:facebook_login'))
+        return HttpResponseRedirect(reverse('yaccounts:facebook_login'))
     
     #
     # Proceed with account creation.
@@ -268,7 +268,7 @@ def create_account(request):
 
                 # Redirect to login page with message.
                 messages.success(request, _("An email was sent in order to confirm your account."))
-                return HttpResponseRedirect(reverse('accounts:login'))
+                return HttpResponseRedirect(reverse('yaccounts:login'))
 
             # Error creating new user.
             except:
@@ -280,7 +280,7 @@ def create_account(request):
                               { 'avatar': facebook_create['profile_image_url'],
                                'username': facebook_create['name'],
                                'email': email,
-                               'post_url': reverse('accounts:facebook_create') },
+                               'post_url': reverse('yaccounts:facebook_create') },
                               context_instance=RequestContext(request))
     
     
@@ -300,4 +300,4 @@ def disconnect_account(request):
         messages.success(request, _("Facebook account disconnected."))
     
     # Redirect to account page.
-    return HttpResponseRedirect(reverse('accounts:index'))
+    return HttpResponseRedirect(reverse('yaccounts:index'))

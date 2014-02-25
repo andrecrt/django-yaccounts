@@ -29,9 +29,9 @@
 
         <!-- BEGIN Nav tabs -->
         <ul class="nav nav-tabs" style="padding: 0 25px 0 25px; margin-bottom: 25px;">
-          <li class="active"><a href="#settings" data-toggle="tab">Settings</a></li>
-          <li><a href="#social" data-toggle="tab">Connected Accounts</a></li>
-          <li><a href="#api" data-toggle="tab">API Keys</a></li>
+          <li class="active"><a href="#settings" data-toggle="tab">{% trans 'Settings' %}</a></li>
+          <li><a href="#social" data-toggle="tab">{% trans 'Connected Accounts' %}</a></li>
+          <li><a href="#api" data-toggle="tab">{% trans 'API Keys' %}</a></li>
         </ul>
         <!-- END Nav tabs -->
 
@@ -54,12 +54,12 @@
                 <div id="photo">
                   <img src="{{ photo_url }}" class="img-thumbnail" style="margin-bottom: 5px;">
                   <br>
-                  <a class="btn btn-default btn-xs crop-image" href="#crop-image-window">{% trans "Change Photo" %}</a>
+                  <a class="btn btn-default btn-xs crop-image" href="#crop-image-window">{% trans 'Change Photo' %}</a>
                 </div>
 
                 <!-- Upload Image Modal Window -->
                 <div id="crop-image-window" class="mfp-hide white-popup" style="text-align: center;">
-                  <h3>{% trans "Upload Photo" %}</h3>
+                  <h3>{% trans 'Upload Photo' %}</h3>
                   <form>
                     <input type="file" style="width: 80px;" accept="image/*" name="photo">
                   </form>
@@ -69,7 +69,7 @@
                   <br>
                   <button class="btn btn-primary" DISABLED>
                     <span class="glyphicon glyphicon-upload"></span>
-                    {% trans "Upload" %}
+                    {% trans 'Upload' %}
                   </button>
                 </div>
 
@@ -83,18 +83,18 @@
                 
                 <!-- Name -->
                 <div class="form-group">
-                  <label for="name">Full name</label>
+                  <label for="name">{% trans 'Full name' %}</label>
                   <input type="text" class="form-control" placeholder="{% trans 'Full name' %}" id="name" value="{{ name }}" data-validate="salsa" data-required="true" required>
                 </div>
                   
                 <!-- Email -->
                 <div class="form-group">
-                  <label for="email">E-mail</label>
+                  <label for="email">{% trans 'E-mail' %}</label>
                   <input type="text" class="form-control" placeholder="{% trans 'Email address' %}" id="email" value="{{ email }}" data-validate="salsa" data-required="true" required>
                 </div>
 
                 <!-- Change Password -->
-                <a style="cursor: pointer;" onclick="$('#update-password').toggle();">{% trans "Change Password" %}</a>
+                <a style="cursor: pointer;" onclick="$('#update-password').toggle();">{% trans 'Change Password' %}</a>
                 <br>
                 <br>
 
@@ -110,7 +110,7 @@
                     <input type="password" class="form-control" placeholder="{% trans 'Confirm password' %}" id="password_confirm" data-validate="salsa">
                   </div>
                   <p>
-                    <a href="{% url 'accounts:reset' %}">Forgot password?</a>
+                    <a href="{% url 'yaccounts:reset' %}">{% trans 'Forgot password?' %}</a>
                   </p>
                   <br>
                 </div>
@@ -157,9 +157,9 @@
                 </div>
                 <div class="col-md-6" style="text-align: right;">
                   {% if facebook_profile %}
-                    <a href="{% url 'accounts:facebook_disconnect' %}" class="btn btn-default btn-xs">Disconnect</a>
+                    <a href="{% url 'yaccounts:facebook_disconnect' %}" class="btn btn-default btn-xs">{% trans 'Disconnect' %}</a>
                   {% else %}
-                    <a href="{% url 'accounts:facebook_login' %}" class="btn btn-default btn-primary btn-sm">Connect</a>
+                    <a href="{% url 'yaccounts:facebook_login' %}" class="btn btn-default btn-primary btn-sm">{% trans 'Connect' %}</a>
                   {% endif %}
                 </div>
               </div>
@@ -184,9 +184,9 @@
                 </div>
                 <div class="col-md-6" style="text-align: right;">
                   {% if twitter_profile %}
-                    <a href="{% url 'accounts:twitter_disconnect' %}" class="btn btn-default btn-xs">Disconnect</a>
+                    <a href="{% url 'yaccounts:twitter_disconnect' %}" class="btn btn-default btn-xs">{% trans 'Disconnect' %}</a>
                   {% else %}
-                    <a href="{% url 'accounts:twitter_login' %}" class="btn btn-default btn-primary btn-sm">Connect</a>
+                    <a href="{% url 'yaccounts:twitter_login' %}" class="btn btn-default btn-primary btn-sm">{% trans 'Connect' %}</a>
                   {% endif %}
                 </div>
               </div>
@@ -220,7 +220,7 @@
       </div>
       <!-- END Frame -->
 
-      <a href="{% url 'accounts:logout' %}" class="text-center new-account">
+      <a href="{% url 'yaccounts:logout' %}" class="text-center new-account">
         <span class="glyphicon glyphicon-off"></span> {% trans 'Logout' %}
       </a>
 

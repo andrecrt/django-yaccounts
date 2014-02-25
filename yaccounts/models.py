@@ -163,7 +163,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
         # Else, return default avatar.
         else:
-            photo_url = settings.HOST_URL + settings.STATIC_URL + 'yaccounts/images/gray-140x140.png'
+            photo_url = settings.HOST_URL + settings.STATIC_URL + 'yaccounts/images/avatar_default.png'
             
         # Return.
         return photo_url
@@ -216,7 +216,7 @@ class ActivationKey(models.Model):
             # Email variables.
             d = Context({
                 'name': self.user.name,
-                'activation_link': settings.HOST_URL + reverse('accounts:confirm') + '?t=' + ConfirmationToken.generate(self.user.email, ConfirmationToken.ACCOUNT_ACTIVATION, self.key)
+                'activation_link': settings.HOST_URL + reverse('yaccounts:confirm') + '?t=' + ConfirmationToken.generate(self.user.email, ConfirmationToken.ACCOUNT_ACTIVATION, self.key)
             })
             
             # Render plaintext email template.
@@ -337,7 +337,7 @@ class ResetRequest(models.Model):
             # Email variables.
             d = Context({
                 'name': self.user.name,
-                'reset_link': settings.HOST_URL + reverse('accounts:reset_confirm') + '?t=' + ConfirmationToken.generate(self.user.email, ConfirmationToken.ACCOUNT_PASSWORD_RESET, self.key)
+                'reset_link': settings.HOST_URL + reverse('yaccounts:reset_confirm') + '?t=' + ConfirmationToken.generate(self.user.email, ConfirmationToken.ACCOUNT_PASSWORD_RESET, self.key)
             })
             
             # Render plaintext email template.
@@ -413,7 +413,7 @@ class EmailUpdate(models.Model):
             # Email variables.
             d = Context({
                 'name': self.user.name,
-                'confirmation_link': settings.HOST_URL + reverse('accounts:confirm') + '?t=' + ConfirmationToken.generate(email=self.user.email,
+                'confirmation_link': settings.HOST_URL + reverse('yaccounts:confirm') + '?t=' + ConfirmationToken.generate(email=self.user.email,
                                                                                                                           operation=ConfirmationToken.ACCOUNT_EMAIL_UPDATE,
                                                                                                                           key=self.key,
                                                                                                                           more={ 'new_email': self.new_email })

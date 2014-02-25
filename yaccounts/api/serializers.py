@@ -22,11 +22,11 @@ class UserSerializer(BaseSerializer):
             'name': obj.name,
             'last_login': obj.last_login.strftime("%Y-%m-%d %H:%M:%S"),
             'photo': {
-                'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:photo'),
+                'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':yaccounts:photo'),
                 'image_url': obj.get_photo_url()
             },
             'api_keys': {
-                'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:api_keys')
+                'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':yaccounts:api_keys')
             }
         }
         
@@ -77,7 +77,7 @@ class ApiKeySerializer(BaseSerializer):
         # Build response.
         simple = {
             'id': obj.id,
-            'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':accounts:api_key_id', args=[obj.id]),
+            'url': settings.HOST_URL + reverse(settings.YACCOUNTS['api_url_namespace'] + ':yaccounts:api_key_id', args=[obj.id]),
             'key': obj.key,
             'description': obj.description,
             'created_at': obj.created_at.strftime("%Y-%m-%d %H:%M:%S"),
