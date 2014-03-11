@@ -43,7 +43,8 @@ class UserSerializer(BaseSerializer):
             simple['facebook_profile'] = {
                 'facebook_user_id': obj.facebookprofile.facebook_user_id,
                 'name': obj.facebookprofile.name,
-                'profile_link': 'http://facebook.com/profile.php?id=' + obj.facebookprofile.facebook_user_id
+                'profile_link': 'http://facebook.com/profile.php?id=' + obj.facebookprofile.facebook_user_id,
+                'profile_image_url': obj.facebookprofile.get_photo_url()
             }
         
         # Return.

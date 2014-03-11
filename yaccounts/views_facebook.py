@@ -246,34 +246,26 @@ def create_account(request):
         #
         if proceed:
             
-            # Create user with random password.
+            # 1) Create user with random password.
             try:
-                
-                # Generate random password.
                 random_password = generate_key(email + str(datetime.datetime.now()) + str(facebook_create['facebook_user_id']))
                 random_password += datetime.datetime.now().strftime('%s')
-                
-                # New user.
-                user = get_user_model().new(name=facebook_create['name'],
-                                            email=email,
-                                            password=random_password,
-                                            credentials_type='facebook')
-                
-                # Facebook profile.
-                facebook_profile = FacebookProfile(user=user,
-                                                  facebook_user_id=facebook_create['facebook_user_id'],
-                                                  name=facebook_create['name'],
-                                                  access_token=facebook_create['access_token'])
-                facebook_profile.save()
-
+                user = get_user_model().new(name=facebook_create['name'], email=email, password=random_password, credentials_type='facebook')
+            except:
+                logger.error('Error creating user via Facebook! #5 ' + str(facebook_create), exc_info=1)
+                messages.error(request, _('Facebook login error #5'))
+            
+            # 2) Create Facebook profile and associate it with the new user.
+            try:
+                userinfo = UserInfo(userinfo={ 'id': facebook_create['facebook_user_id'], 'name': facebook_create['name'] })
+                FacebookProfile.new(user=user, userinfo=userinfo, access_token=facebook_create['access_token'])
                 # Redirect to login page with message.
                 messages.success(request, _("An email was sent in order to confirm your account."))
                 return HttpResponseRedirect(reverse('yaccounts:login'))
-
-            # Error creating new user.
             except:
-                logger.error('Error creating user via Facebook! ' + str(facebook_create), exc_info=1)
-                messages.error(request, _('Facebook login error #5'))
+                user.delete() # Delete newly created user (as it would be inaccessible since the Facebook Profile wasn't created!)
+                logger.error('Error creating user via Facebook! #6 ' + str(facebook_create), exc_info=1)
+                messages.error(request, _('Facebook login error #6'))
     
     # Render page.
     return render_to_response('yaccounts/create_social.html',

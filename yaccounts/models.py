@@ -1,4 +1,10 @@
+import Image
 import logging
+import os
+import re
+import tempfile
+import twitter
+import urllib2
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
@@ -13,6 +19,7 @@ from yutils.email import EmailMessage
 
 from exceptions import InvalidParameter
 from utils import ConfirmationToken
+from django.core import files
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -168,7 +175,61 @@ class User(AbstractBaseUser, PermissionsMixin):
         # Return.
         return photo_url
     
+    def set_photo(self, photo_file, filename=None):
+        """
+        Sets the account photo.
+        """    
+        # 1) If user has photo, delete old file.
+        if hasattr(self, 'userphoto'):
+            user_photo = self.userphoto
+            os.remove(user_photo.file.path)
+        # If not, create it.
+        else:
+            user_photo = UserPhoto(user=self)
+            
+        # 2) If a filename is provided, set it.
+        if filename and filename != '':
+            user_photo.file.save(filename, photo_file, save=False)
+        # If not, just add photo.
+        else:
+            user_photo.file = photo_file
+            
+        # 3) Save.
+        user_photo.save()
+        
+        # 4) Resize image. User photos are fixed to 140x140.
+        try:
+            im = Image.open(user_photo.file.path)
+            im = im.resize((140, 140), Image.ANTIALIAS)
+            im.save(user_photo.file.path, format='JPEG')
+        except IOError:
+            logger.error('Error resizing user photo! User: ' + str(self.email))
+            raise
+        
+        # 5) Return.
+        return user_photo
     
+    def set_photo_from_url(self, image_url, filename=None):
+        """
+        Fetches file from given URL and sets it as the account's photo.
+        """
+        # Fetch file from URL.
+        response = urllib2.urlopen(image_url)
+        
+        # Create a temporary file.
+        lf = tempfile.NamedTemporaryFile()
+        lf.write(response.read())
+        
+        # If no filename is provided, make it the last part of the URL.
+        if not filename or filename == '':
+            name = image_url.split('/')[-1]
+        else:
+            name = filename
+        
+        # Set the account photo.
+        self.set_photo(photo_file=files.File(lf), filename=name)
+
+
 class UserPhoto(models.Model):
     """
     User profile picture.
@@ -476,12 +537,19 @@ class TwitterProfile(models.Model):
         """
         Links a Twitter profile with account.
         """
+        # Create Twitter profile.
         twitter_profile = TwitterProfile(user=user,
                                          twitter_user_id=userinfo.id,
                                          screen_name=userinfo.screen_name,
                                          access_token=access_token['oauth_token'],
                                          access_token_secret=access_token['oauth_token_secret'])
         twitter_profile.save()
+        
+        # If user's account doesn't have a photo, fetch Twitter profile's photo.
+        if not hasattr(twitter_profile.user, 'userphoto'):
+            twitter_profile.user.set_photo_from_url(twitter_profile.get_photo_url())
+        
+        # Return.
         return twitter_profile
     
     def update(self, userinfo, access_token):
@@ -493,6 +561,26 @@ class TwitterProfile(models.Model):
         self.access_token_secret = access_token['oauth_token_secret']
         self.save()
         return self
+    
+    def get_photo_url(self):
+        """
+        Returns the profile's photo url.
+        """
+        # Initialize API connector stuffz.
+        api = twitter.Api(consumer_key=settings.YACCOUNTS['twitter_oauth']['consumer_key'],
+                          consumer_secret=settings.YACCOUNTS['twitter_oauth']['consumer_secret'],
+                          access_token_key=self.access_token,
+                          access_token_secret=self.access_token_secret)
+        
+        # Get profile image URL from userinfo.
+        image_url = api.VerifyCredentials().profile_image_url
+        
+        # Since we want the original size of the image, we have to change the filename in the URL, by removing '_normal'.
+        splited_url = image_url.split('/')
+        splited_url[-1] = re.sub('_normal', '', splited_url[-1])
+        
+        # Return 'updated' URL.
+        return '/'.join(splited_url)
     
     
 class FacebookProfile(models.Model):
@@ -517,11 +605,18 @@ class FacebookProfile(models.Model):
         """
         Links a Facebook profile with account.
         """
+        # Create Twitter profile.
         facebook_profile = FacebookProfile(user=user,
                                            facebook_user_id=userinfo.id,
                                            name=userinfo.name,
                                            access_token=access_token)
         facebook_profile.save()
+        
+        # If user's account doesn't have a photo, fetch Twitter profile's photo.
+        if not hasattr(facebook_profile.user, 'userphoto'):
+            facebook_profile.user.set_photo_from_url(image_url=facebook_profile.get_photo_url(), filename=str(facebook_profile.facebook_user_id) + '.png')
+        
+        # Return.
         return facebook_profile
     
     def update(self, userinfo, access_token):
@@ -532,6 +627,12 @@ class FacebookProfile(models.Model):
         self.access_token = access_token
         self.save()
         return self
+    
+    def get_photo_url(self):
+        """
+        Returns the profile's photo url.
+        """
+        return FacebookProfile.get_profile_image_url(self.facebook_user_id)
         
     @staticmethod
     def get_profile_image_url(fbid):

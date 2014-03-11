@@ -1,6 +1,4 @@
-import Image
 import logging
-import os
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.http.response import HttpResponse
@@ -12,7 +10,6 @@ from yapi.utils import generate_key
 
 from serializers import UserSerializer, UserPhotoSerializer, ApiKeySerializer
 from yaccounts.forms import UserForm, UserPhotoForm
-from yaccounts.models import UserPhoto
 
 # Instantiate logger.
 logger = logging.getLogger(__name__)
@@ -100,34 +97,9 @@ class AccountPhotoHandler(Resource):
         # Provided data is valid.
         if form.is_valid():
             
-            # If user has photo.
-            if hasattr(request.auth['user'], 'userphoto'):
-                user_photo = request.auth['user'].userphoto
-                # 1) Delete old file.
-                os.remove(user_photo.file.path)
-                # 2) Update with new one.
-                user_photo.file = form.cleaned_data['file']
-                
-            # If not, create it.
-            else:
-                user_photo = UserPhoto(user=request.auth['user'],
-                                       file=form.cleaned_data['file'])
-                
-            # Save.
-            user_photo.save()
-            
-            # Resize image (user photos are fixed to 140x140)
-            try:
-                im = Image.open(user_photo.file.path)
-                im = im.resize((140, 140), Image.ANTIALIAS)
-                im.save(user_photo.file.path, format='JPEG')
-            except IOError:
-                logger.error('Error resizing user photo! User: ' + str(request.auth['user'].email))
-                raise
-            
-            # Return.
+            # Update account photo and return.
             return Response(request=request,
-                            data=user_photo,
+                            data=request.auth['user'].set_photo(form.cleaned_data['file']),
                             serializer=UserPhotoSerializer,
                             status=HTTPStatus.SUCCESS_201_CREATED)
             

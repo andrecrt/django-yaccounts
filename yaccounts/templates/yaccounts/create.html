@@ -55,3 +55,11 @@
 </div>
 
 {% endblock %}
+
+{% block javascript %}
+  <script>
+      $(document).ready(function() {
+          $('form button[type="submit"]').on('click', function() { $('form button[type="submit"]').attr('disabled', true); $('form').submit(); } );
+      });    
+  </script>
+{% endblock %}

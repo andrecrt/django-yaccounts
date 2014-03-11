@@ -37,6 +37,16 @@ consumer = oauth.Consumer(consumer_key, consumer_secret)
 client = oauth.Client(consumer)
 
 
+class UserInfo:
+    """
+    Twitter userinfo wrapper.
+    (if necessary to have an object similar to what is returned by the twitter lib)
+    """
+    def __init__(self, twitter_user_id, screen_name):
+        self.id = twitter_user_id
+        self.screen_name = screen_name
+
+
 def login_request(request):
     """
     Starts Twitter authentication.
@@ -263,35 +273,26 @@ def create_account(request):
         #
         if proceed:
             
-            # Create user with random password.
+            # 1) Create user with random password.
             try:
-                
-                # Generate random password.
                 random_password = generate_key(email + str(datetime.datetime.now()) + str(twitter_create['twitter_user_id']))
                 random_password += datetime.datetime.now().strftime('%s')
-                
-                # New user.
-                user = get_user_model().new(name=twitter_create['name'],
-                                            email=email,
-                                            password=random_password,
-                                            credentials_type='twitter')
-                
-                # Twitter profile.
-                twitter_profile = TwitterProfile(user=user,
-                                                twitter_user_id=twitter_create['twitter_user_id'],
-                                                screen_name=twitter_create['screen_name'],
-                                                access_token=twitter_create['access_token']['oauth_token'],
-                                                access_token_secret=twitter_create['access_token']['oauth_token_secret'])
-                twitter_profile.save()
-
+                user = get_user_model().new(name=twitter_create['name'], email=email, password=random_password, credentials_type='twitter')
+            except:
+                logger.error('Error creating user via Twitter! #5 ' + str(twitter_create), exc_info=1)
+                messages.error(request, _('Twitter login error #5'))
+            
+            # 2) Create Twitter profile and associate it with the new user.
+            try:
+                userinfo = UserInfo(twitter_user_id=twitter_create['twitter_user_id'], screen_name=twitter_create['screen_name'])
+                TwitterProfile.new(user=user, userinfo=userinfo, access_token=twitter_create['access_token'])
                 # Redirect to login page with message.
                 messages.success(request, _("An email was sent in order to confirm your account."))
                 return HttpResponseRedirect(reverse('yaccounts:login'))
-
-            # Error creating new user.
             except:
-                logger.error('Error creating user via Twitter! ' + str(twitter_create), exc_info=1)
-                messages.error(request, _('Twitter login error #5'))
+                user.delete() # Delete newly created user (as it would be inaccessible since the Twitter Profile wasn't created!)
+                logger.error('Error creating user via Twitter! #6 ' + str(twitter_create), exc_info=1)
+                messages.error(request, _('Twitter login error #6'))
     
     # Render page.
     return render_to_response('yaccounts/create_social.html',
