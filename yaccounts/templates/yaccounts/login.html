@@ -20,7 +20,7 @@
         <div class="social-box">
           <div class="row mg-btm">
             <div class="col-md-12">
-              <a href="{% url 'yaccounts:facebook_login' %}" class="btn btn-primary btn-block">
+              <a href="{% url 'yaccounts:facebook_login' %}{% if next %}?next={{ next }}{% endif %}" class="btn btn-primary btn-block">
                 <i class="fa fa-facebook-square"></i></i>
                 &nbsp;&nbsp;{% trans 'Login with Facebook' %}
               </a>
@@ -29,7 +29,7 @@
           <br>
           <div class="row">
             <div class="col-md-12">
-              <a href="{% url 'yaccounts:twitter_login' %}" class="btn btn-info btn-block" >
+              <a href="{% url 'yaccounts:twitter_login' %}{% if next %}?next={{ next }}{% endif %}" class="btn btn-info btn-block" >
                 <i class="fa fa-twitter-square"></i>
                 &nbsp;&nbsp;{% trans 'Login with Twitter' %}
               </a>

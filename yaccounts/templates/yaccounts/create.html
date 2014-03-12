@@ -15,6 +15,33 @@
       <div class="account-wall">
 
         <img class="profile-img" src="{% static 'yaccounts/images/avatar_default.png' %}" alt="Avatar">
+
+        <!-- Social Auth -->
+        <div class="social-box">
+          <div class="row mg-btm">
+            <div class="col-md-12">
+              <a href="{% url 'yaccounts:facebook_login' %}{% if next %}?next={{ next }}{% endif %}" class="btn btn-primary btn-block">
+                <i class="fa fa-facebook-square"></i></i>
+                &nbsp;&nbsp;{% trans 'Sign Up with Facebook' %}
+              </a>
+            </div>
+          </div>
+          <br>
+          <div class="row">
+            <div class="col-md-12">
+              <a href="{% url 'yaccounts:twitter_login' %}{% if next %}?next={{ next }}{% endif %}" class="btn btn-info btn-block" >
+                <i class="fa fa-twitter-square"></i>
+                &nbsp;&nbsp;{% trans 'Sign Up with Twitter' %}
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Divider -->
+        <div class="login-or">
+          <hr class="hr-or">
+          <span class="span-or">or</span>
+        </div>
         
         <!-- Django Messages -->
         {% include 'yaccounts/django_messages.html' %}
