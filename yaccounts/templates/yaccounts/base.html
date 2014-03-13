@@ -32,7 +32,12 @@
   </head>
   
   <body>
+
+    {% include 'yaccounts/navbar.html' %}
+
     {% block body %}{% endblock %}
+
+    {% include 'yaccounts/footer.html' %}
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="{% static 'yaccounts/libs/jquery-1.10.2.min.js' %}"></script>
