@@ -203,6 +203,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             im = im.resize((140, 140), Image.ANTIALIAS)
             im.save(user_photo.file.path, format='JPEG')
         except IOError:
+            user_photo.destroy() # In order to not get stuck with an invalid image and, therefore, a nasty icon in the browser :P
             logger.error('Error resizing user photo! User: ' + str(self.email))
             raise
         
@@ -242,6 +243,13 @@ class UserPhoto(models.Model):
         String representation of the instance.
         """
         return str(self.user)
+    
+    def destroy(self):
+        """
+        Deletes instance AND file.
+        """
+        os.remove(self.file.path)
+        self.delete()
 
 
 class ActivationKey(models.Model):
