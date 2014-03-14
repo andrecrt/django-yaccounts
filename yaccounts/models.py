@@ -204,7 +204,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             im.save(user_photo.file.path, format='JPEG')
         except IOError:
             user_photo.destroy() # In order to not get stuck with an invalid image and, therefore, a nasty icon in the browser :P
-            logger.error('Error resizing user photo! User: ' + str(self.email))
+            logger.error('Error resizing user photo! User: ' + str(self.email), exc_info=1)
             raise
         
         # 5) Return.
@@ -214,6 +214,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Fetches file from given URL and sets it as the account's photo.
         """
+        logger.debug('Setting photo from URL. User: ' + str(self.email) + ', URL: ' + str(image_url))
+        
         # Fetch file from URL.
         response = urllib2.urlopen(image_url)
         
@@ -226,6 +228,8 @@ class User(AbstractBaseUser, PermissionsMixin):
             name = image_url.split('/')[-1]
         else:
             name = filename
+            
+        logger.debug('Filename: ' + str(filename))
         
         # Set the account photo.
         self.set_photo(photo_file=files.File(lf), filename=name)
