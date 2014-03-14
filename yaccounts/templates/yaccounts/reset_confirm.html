@@ -50,7 +50,7 @@
 {% block javascript %}
   <script>
       $(document).ready(function() {
-          $('form button[type="submit"]').on('click', function() { $('form button[type="submit"]').attr('disabled', true); $('form').submit(); } );
+          $('.form-signup button[type="submit"]').on('click', function() { $('.form-signup button[type="submit"]').attr('disabled', true); $('.form-signup').submit(); } );
       });    
   </script>
 {% endblock %}
