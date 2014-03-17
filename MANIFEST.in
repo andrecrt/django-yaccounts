@@ -1,5 +1,6 @@
 include LICENSE
 include README.rst
 recursive-include yaccounts/api *
+recursive-include yaccounts/locale *
 recursive-include yaccounts/static *
 recursive-include yaccounts/templates *

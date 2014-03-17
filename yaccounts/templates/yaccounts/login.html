@@ -4,6 +4,8 @@
 
 {% load staticfiles %}
 
+{% block title %}{% trans 'Login' %}{% endblock %}
+
 {% block body %}
 
 <div class="container">
@@ -40,7 +42,7 @@
         <!-- Divider -->
         <div class="login-or">
           <hr class="hr-or">
-          <span class="span-or">or</span>
+          <span class="span-or">{% trans 'or' %}</span>
         </div>
         
         <!-- Django Messages -->

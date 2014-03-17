@@ -214,8 +214,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Fetches file from given URL and sets it as the account's photo.
         """
-        logger.debug('Setting photo from URL. User: ' + str(self.email) + ', URL: ' + str(image_url))
-        
         # Fetch file from URL.
         response = urllib2.urlopen(image_url)
         
@@ -228,8 +226,6 @@ class User(AbstractBaseUser, PermissionsMixin):
             name = image_url.split('/')[-1]
         else:
             name = filename
-            
-        logger.debug('Filename: ' + str(filename))
         
         # Set the account photo.
         self.set_photo(photo_file=files.File(lf), filename=name)

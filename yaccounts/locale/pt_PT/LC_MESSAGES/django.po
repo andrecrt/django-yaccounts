@@ -1,0 +1,444 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-03-17 16:23+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: admin.py:15 admin.py:48 templates/yaccounts/create.html:64
+#: templates/yaccounts/login.html:59 templates/yaccounts/reset_confirm.html:29
+msgid "Password"
+msgstr "Password"
+
+#: admin.py:16
+msgid "Password confirmation"
+msgstr "Confirme password"
+
+#: admin.py:28
+msgid "Passwords don't match"
+msgstr "Passwords não coincidem"
+
+#: admin.py:49
+msgid ""
+"Raw passwords are not stored, so there is no way to see this user's "
+"password, but you can change the password using <a href=\"password/\">this "
+"form</a>."
+msgstr ""
+
+#: forms.py:73 forms.py:81
+msgid "This field is required."
+msgstr "Campo obrigatório."
+
+#: forms.py:76
+msgid "Invalid password."
+msgstr "Password inválida."
+
+#: forms.py:84
+msgid "Confirmation password doesn't match."
+msgstr "Password de confirmação não coincide."
+
+#: models.py:68 templates/yaccounts/index.html:95
+msgid "Email address"
+msgstr "Endereço de email"
+
+#: models.py:69
+msgid "Name"
+msgstr "Nome"
+
+#: models.py:70
+msgid "Active"
+msgstr "Activa"
+
+#: models.py:70
+msgid ""
+"Designates whether this user should be treated as active. Unselect this "
+"instead of deleting accounts."
+msgstr ""
+
+#: models.py:71
+msgid "Staff status"
+msgstr ""
+
+#: models.py:71
+msgid "Designates whether the user can log into this admin site."
+msgstr ""
+
+#: models.py:72
+msgid "Created at"
+msgstr ""
+
+#: models.py:123
+msgid "Please provide a valid email address"
+msgstr "Por favor, indique um endereço de email válido"
+
+#: models.py:129
+msgid "This email is already registered."
+msgstr "O email já se encontra registado."
+
+#: models.py:300
+msgid "New Account"
+msgstr "Conta Nova"
+
+#: models.py:421 templates/yaccounts/reset.html:7
+#: templates/yaccounts/reset_confirm.html:7
+#: templates/yaccounts/reset_confirm.html:14
+msgid "Reset Password"
+msgstr "Recuperar Password"
+
+#: models.py:500
+msgid "Confirm Email"
+msgstr "Confirmar Email"
+
+#: views.py:80
+msgid "Please provide your email and password."
+msgstr "Por favor indique o seu email e password."
+
+#: views.py:135
+msgid ""
+"You didn't activate your account. <a href=\"\">Resend confirmation email</a>."
+msgstr "Ainda não activou a sua conta."
+
+#: views.py:152 views.py:405 views_facebook.py:147 views_twitter.py:173
+msgid "Your account is disabled."
+msgstr "A sua conta encontra-se desactivada."
+
+#: views.py:183
+msgid "Invalid credentials."
+msgstr "Credenciais inválidas."
+
+#: views.py:239
+msgid "Please provide your name, email and a password."
+msgstr "Por favor indique o seu nome, email e password."
+
+#: views.py:252 views_facebook.py:263 views_twitter.py:290
+msgid "An email was sent in order to confirm your account."
+msgstr "Foi-lhe enviado um email para activar a sua conta."
+
+#: views.py:261
+msgid "Error creating account, please contact support."
+msgstr "Erro ao criar conta, por favor contacte o suporte."
+
+#: views.py:370
+msgid "Your new email was confirmed."
+msgstr "O seu novo email foi confirmado."
+
+#: views.py:395
+msgid "Please provide your email."
+msgstr "Por favor, indique o seu email."
+
+#: views.py:414
+msgid "A reset was requested recently."
+msgstr "Foi feito um pedido de recuperação recentemente."
+
+#: views.py:421
+msgid "An email was sent with reset instructions."
+msgstr "Foi-lhe enviado um email com as instruções para recuperar a sua password."
+
+#: views.py:424
+msgid "Unable to reset password."
+msgstr "Não foi possível recuperar a password."
+
+#: views.py:431
+msgid "User does not exist."
+msgstr "Utilizador não existe."
+
+#: views.py:491
+msgid "Please provide a password and respective confirmation."
+msgstr "Por favor, indique uma password e respectiva confirmação."
+
+#: views.py:495
+msgid "Passwords don't match."
+msgstr "Passwords não coincidem."
+
+#: views.py:512
+msgid "Your password was updated."
+msgstr "A sua password foi actualizada."
+
+#: views_facebook.py:53
+msgid "Facebook login not available."
+msgstr "Login via Facebook indisponível."
+
+#: views_facebook.py:77
+msgid "Facebook login error #1"
+msgstr ""
+
+#: views_facebook.py:92
+msgid "Facebook login error #2"
+msgstr ""
+
+#: views_facebook.py:101
+msgid "Facebook login error #3"
+msgstr ""
+
+#: views_facebook.py:160
+msgid "Facebook account connected successfully."
+msgstr "Conta de Facebook associada com sucesso."
+
+#: views_facebook.py:162
+msgid "You already have a Facebook profile linked to your account."
+msgstr "Já possui uma conta de Facebook associada à sua conta."
+
+#: views_facebook.py:195
+msgid "Facebook login error #4"
+msgstr ""
+
+#: views_facebook.py:219 views_twitter.py:246
+msgid "Please provide an email address."
+msgstr "Por favor, indique um endereço de email."
+
+#: views_facebook.py:226 views_twitter.py:253
+msgid "Please provide a valid email address."
+msgstr "Por favor, indique um endereço válido de email."
+
+#: views_facebook.py:232
+msgid "Facebook profile already connected to another account."
+msgstr "Perfil de Facebook já associado a outra conta."
+
+#: views_facebook.py:240 views_twitter.py:267
+msgid "Email already registered."
+msgstr "Email já registado."
+
+#: views_facebook.py:256
+msgid "Facebook login error #5"
+msgstr ""
+
+#: views_facebook.py:268
+msgid "Facebook login error #6"
+msgstr ""
+
+#: views_facebook.py:287
+msgid "You don't have a Facebook account connected."
+msgstr "Não existe uma conta de Facebook associada."
+
+#: views_facebook.py:292
+msgid "Facebook account disconnected."
+msgstr "Conta de Facebook desassociada."
+
+#: views_twitter.py:59
+msgid "Twitter login not available."
+msgstr "Login via Twitter indisponível."
+
+#: views_twitter.py:93
+msgid "Twitter login error #1"
+msgstr ""
+
+#: views_twitter.py:99
+msgid "Twitter login error #2"
+msgstr ""
+
+#: views_twitter.py:127
+msgid "Twitter login error #3"
+msgstr ""
+
+#: views_twitter.py:186
+msgid "Twitter account connected successfully."
+msgstr "Conta de Twitter associada com sucesso."
+
+#: views_twitter.py:188
+msgid "You already have a Twitter profile linked to your account."
+msgstr "Já existe uma conta de Twitter associada ao seu perfil."
+
+#: views_twitter.py:222
+msgid "Twitter login error #4"
+msgstr ""
+
+#: views_twitter.py:259
+msgid "Twitter profile already connected to another account."
+msgstr "Perfil de Twitter já associado a outra conta."
+
+#: views_twitter.py:283
+msgid "Twitter login error #5"
+msgstr ""
+
+#: views_twitter.py:295
+msgid "Twitter login error #6"
+msgstr ""
+
+#: views_twitter.py:314
+msgid "You don't have a Twitter account connected."
+msgstr "Não existe uma conta de Twitter associada."
+
+#: views_twitter.py:319
+msgid "Twitter account disconnected."
+msgstr "Conta de Twitter desassociada."
+
+#: templates/yaccounts/create.html:7 templates/yaccounts/create.html.py:14
+#: templates/yaccounts/create_social.html:14
+msgid "Create Account"
+msgstr "Criar Conta"
+
+#: templates/yaccounts/create.html:27
+msgid "Sign Up with Facebook"
+msgstr "Registar via Facebook"
+
+#: templates/yaccounts/create.html:36
+msgid "Sign Up with Twitter"
+msgstr "Registar via Twitter"
+
+#: templates/yaccounts/create.html:56
+msgid "Full Name"
+msgstr "Nome Completo"
+
+#: templates/yaccounts/create.html:60
+#: templates/yaccounts/create_social.html:34 templates/yaccounts/login.html:56
+#: templates/yaccounts/reset.html:29
+msgid "Email"
+msgstr "Email"
+
+#: templates/yaccounts/create.html:73
+msgid "Sign up"
+msgstr "Registar"
+
+#: templates/yaccounts/create.html:80
+#: templates/yaccounts/create_social.html:50
+msgid "Already have an account?"
+msgstr "Já possui uma conta?"
+
+#: templates/yaccounts/create_social.html:7
+msgid "Activate Account"
+msgstr "Activar Conta"
+
+#: templates/yaccounts/create_social.html:30
+msgid ""
+"In order to activate your account, please provide us your email address."
+msgstr "Para que possamos activar a sua conta, por favor indique-nos o seu endereço de e-mail."
+
+#: templates/yaccounts/create_social.html:43
+msgid "Activate"
+msgstr "Activar"
+
+#: templates/yaccounts/index.html:7 templates/yaccounts/index.html.py:27
+msgid "My Account"
+msgstr "A Minha Conta"
+
+#: templates/yaccounts/index.html:34
+msgid "Settings"
+msgstr "Definições"
+
+#: templates/yaccounts/index.html:35
+msgid "Connected Accounts"
+msgstr "Contas Associadas"
+
+#: templates/yaccounts/index.html:36
+msgid "API Keys"
+msgstr "API Keys"
+
+#: templates/yaccounts/index.html:59
+msgid "Change Photo"
+msgstr "Alterar Foto"
+
+#: templates/yaccounts/index.html:64
+msgid "Upload Photo"
+msgstr "Submeter Foto"
+
+#: templates/yaccounts/index.html:74
+msgid "Upload"
+msgstr "Submeter"
+
+#: templates/yaccounts/index.html:88 templates/yaccounts/index.html.py:89
+msgid "Full name"
+msgstr "Nome completo"
+
+#: templates/yaccounts/index.html:94
+msgid "E-mail"
+msgstr "E-mail"
+
+#: templates/yaccounts/index.html:99
+msgid "Change Password"
+msgstr "Alterar Password"
+
+#: templates/yaccounts/index.html:106
+msgid "Current password"
+msgstr "Password actual"
+
+#: templates/yaccounts/index.html:109
+msgid "New password"
+msgstr "Nova password"
+
+#: templates/yaccounts/index.html:112
+msgid "Confirm password"
+msgstr "Confirmar password"
+
+#: templates/yaccounts/index.html:115 templates/yaccounts/login.html:73
+msgid "Forgot password?"
+msgstr "Esqueceu-se?"
+
+#: templates/yaccounts/index.html:122
+msgid "Save"
+msgstr "Guardar"
+
+#: templates/yaccounts/index.html:156 templates/yaccounts/index.html.py:183
+msgid "Not Connected"
+msgstr ""
+
+#: templates/yaccounts/index.html:162 templates/yaccounts/index.html.py:189
+msgid "Disconnect"
+msgstr "Desligar"
+
+#: templates/yaccounts/index.html:164 templates/yaccounts/index.html.py:191
+msgid "Connect"
+msgstr "Ligar"
+
+#: templates/yaccounts/index.html:226
+msgid "Logout"
+msgstr "Logout"
+
+#: templates/yaccounts/login.html:7 templates/yaccounts/login.html.py:14
+msgid "Login"
+msgstr "Login"
+
+#: templates/yaccounts/login.html:27
+msgid "Login with Facebook"
+msgstr "Login via Facebook"
+
+#: templates/yaccounts/login.html:36
+msgid "Login with Twitter"
+msgstr "Login via Twitter"
+
+#: templates/yaccounts/login.html:67
+msgid "Sign in"
+msgstr "Entrar"
+
+#: templates/yaccounts/login.html:70
+msgid "Remember me"
+msgstr "Manter-me ligado"
+
+#: templates/yaccounts/login.html:80
+msgid "Create an account"
+msgstr "Criar conta"
+
+#: templates/yaccounts/reset.html:14
+msgid "Account Recovery"
+msgstr "Recuperar Password"
+
+#: templates/yaccounts/reset.html:33
+msgid "Reset password"
+msgstr "Recuperar Password"
+
+#: templates/yaccounts/reset.html:41
+msgid "Back to account settings"
+msgstr "Voltar aos detalhes da minha conta"
+
+#: templates/yaccounts/reset.html:43 templates/yaccounts/reset_confirm.html:44
+msgid "Back to login"
+msgstr "Voltar ao login"
+
+#: templates/yaccounts/reset_confirm.html:33
+msgid "Confirm"
+msgstr "Confirmar"
+
+#: templates/yaccounts/reset_confirm.html:37
+msgid "Update password"
+msgstr "Actualizar Password"
