@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 # Supported user credentials for authentication.
 CREDENTIAL_TYPES = (
+    ('api', 'API'),
     ('email', 'E-mail'),
     ('facebook', 'Facebook'),
     ('twitter', 'Twitter')
@@ -112,7 +113,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
         
     @staticmethod
-    def new(name, email, password, credentials_type):
+    def new(name, email, password, credentials_type, email_activation_key=True):
         """
         Creates a new account.
         """
@@ -137,7 +138,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         
         # Create activation key.
         try:
-            ActivationKey.new(user)
+            ActivationKey.new(user, email_activation_key)
         
         # Unable to create activation key, abort account creation.
         except:
@@ -268,13 +269,14 @@ class ActivationKey(models.Model):
         return str(self.user)
     
     @staticmethod
-    def new(user):
+    def new(user, email_activation_key):
         """
         Creates an activation key for given user.
         """
         activation_key = ActivationKey(user=user, key=generate_key(salt=user.email))
         activation_key.save()
-        activation_key.send_activation_link()
+        if email_activation_key:
+            activation_key.send_activation_link()
         return True
     
     def send_activation_link(self):

@@ -71,7 +71,7 @@ settings.py
     	# API URL Namespace (e.g. YAPI URL is in /api/v1, and the respective Django URL namespaces are 'api' and 'v1')
         'api_url_namespace': 'api:v1',
         
-        # Enabled signup types (possible: 'EMAIL', 'FACEBOOK', 'TWITTER')
+        # Enabled signup types (possible: 'EMAIL', 'FACEBOOK', 'TWITTER', 'API')
         'signup_available': ['EMAIL'], # Only email signup enabled
         
         # Application emails 'sender'.
