@@ -367,6 +367,13 @@ class AccountRegisterHandler(Resource):
                             data={ 'message': 'Missing parameters' },
                             serializer=None,
                             status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
+            
+        # Mandatory parameters not provided.
+        if name == '' or email == '' or password == '':
+            return Response(request=request,
+                            data={ 'message': 'Please provide name, email and password.' },
+                            serializer=None,
+                            status=HTTPStatus.CLIENT_ERROR_400_BAD_REQUEST)
         
         # Proceed with creating account.
         else:

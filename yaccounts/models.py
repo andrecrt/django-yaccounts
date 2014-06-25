@@ -117,6 +117,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Creates a new account.
         """
+        # Name cannot be empty.
+        if name == '':
+            raise InvalidParameter('name', _("Please provide a name"))
+        
         # Validate email address.
         try:
             validate_email(email)
@@ -130,6 +134,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             raise InvalidParameter('email', _("This email is already registered."))
         except ObjectDoesNotExist:
             pass
+        
+        # Password cannot be empty.
+        if password == '':
+            raise InvalidParameter('password', _("Please provide a password"))
         
         # All check, create account.
         user = User.objects.create_user(name=name, email=email, password=password)
